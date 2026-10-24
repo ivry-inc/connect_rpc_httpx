@@ -14,6 +14,7 @@ module ProtocGenConnectRuby
     # : (?String text) -> void
     def line: (?String text) -> void
 
+    # Writes the block's lines one level deeper.
     # : () { () -> void } -> void
     def indent: () { () -> void } -> void
 

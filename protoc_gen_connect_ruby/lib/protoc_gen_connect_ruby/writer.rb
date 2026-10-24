@@ -22,6 +22,7 @@ module ProtocGenConnectRuby
       @lines << (text.empty? ? "" : "#{"  " * @depth}#{text}")
     end
 
+    # Writes the block's lines one level deeper.
     #: () { () -> void } -> void
     def indent
       @depth += 1

@@ -8,6 +8,7 @@ module ConnectRpcHttpx
   # Connect status codes, as the snake_case symbols the protocol puts on the wire.
   # See https://connectrpc.com/docs/protocol/#error-codes.
   module Code
+    # Every code, in the order of their numeric values.
     ALL = [
       :canceled,
       :unknown,

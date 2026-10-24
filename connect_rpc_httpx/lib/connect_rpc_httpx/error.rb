@@ -47,7 +47,7 @@ module ConnectRpcHttpx
     end
 
     #: (String body) -> Hash[String, untyped]?
-    private_class_method def self.parse_wire_error(body)
+    def self.parse_wire_error(body)
       wire = JSON.parse(body)
       wire if wire.is_a?(Hash)
     rescue JSON::ParserError
@@ -56,7 +56,7 @@ module ConnectRpcHttpx
 
     # Malformed entries are skipped rather than failing the whole error.
     #: (untyped details) -> Array[Google::Protobuf::Any]
-    private_class_method def self.parse_details(details)
+    def self.parse_details(details)
       return [] unless details.is_a?(Array)
 
       details.filter_map do |detail|
@@ -70,10 +70,12 @@ module ConnectRpcHttpx
 
     # Connect sends unpadded base64, and both alphabets are accepted in the wild.
     #: (String value) -> String
-    private_class_method def self.decode_base64(value)
+    def self.decode_base64(value)
       padded = value.tr("-_", "+/")
       padded += "=" * (-padded.length % 4)
       Base64.strict_decode64(padded)
     end
+
+    private_class_method :parse_wire_error, :parse_details, :decode_base64
   end
 end
