@@ -72,6 +72,16 @@ RSpec.describe(ConnectRpcHttpx::Client) do
       expect(stub).to have_been_requested
     end
 
+    it "sends through the given httpx session and its plugins" do
+      http = HTTPX.plugin(:persistent).plugin(:auth).bearer_auth("TOKEN")
+      client = described_class.new(base_url, http:)
+      stub = stub_request(:post, url).with(headers: {"authorization" => "Bearer TOKEN"}).to_return(proto_response(1))
+
+      client.call_unary(method_descriptor, request)
+
+      expect(stub).to have_been_requested
+    end
+
     it "sends the deadline as connect-timeout-ms" do
       stub = stub_request(:post, url).with(headers: {"connect-timeout-ms" => "1500"}).to_return(proto_response(1))
 

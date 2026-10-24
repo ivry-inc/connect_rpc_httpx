@@ -47,6 +47,29 @@ client.greet(request, headers: {"x-request-id" => "abc"}, timeout: 1.5)
 
 Call headers are merged over the client's. A call's `timeout:` replaces the client's, and `nil` removes the deadline.
 
+### Authentication and httpx plugins
+
+Every RPC goes through the client's httpx session, so httpx plugins apply to all of them. Build the session and pass it as `http:`:
+
+```ruby
+http = HTTPX.plugin(:persistent).plugin(:auth).bearer_auth(ENV.fetch("API_TOKEN"))
+
+client = Acme::Greet::V1::GreetServiceClient.new("https://api.example.com", http:)
+```
+
+For a token that changes, give `bearer_auth` a block. httpx caches its result, so set how long the token lasts and the block is called again after that:
+
+```ruby
+http = HTTPX.plugin(:persistent)
+  .plugin(:auth)
+  .with(auth_header_expires_in: 300) # seconds
+  .bearer_auth { fetch_token }
+```
+
+Other plugins and options chain the same way, such as `.plugin(:retries, max_retries: 2)`, `.plugin(:aws_sigv4, ...)` or `.with(ssl: {...})` for client certificates. Keep `:persistent` in the chain so connections are reused between RPCs. The client never modifies the session, so one session can serve several clients and threads.
+
+A fixed header needs no plugin: pass it as `headers:` to `new`, or to a single call.
+
 ### Response metadata
 
 Generated methods return the response message. For response headers and trailers, call the method descriptor through `call_unary`:
