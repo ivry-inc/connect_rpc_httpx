@@ -129,6 +129,41 @@ version = "36.2"
 backend = "aqua:protocolbuffers/protobuf/protoc"
 specifiers = ["36.2"]
 
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.linux-arm64"]
+checksum = "sha256:8b8f18bd2b30346efbc698dd5a73dd7c805f3ef8380f6dfc95c768f3f1852f6a"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-linux-aarch_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/570742403"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.linux-arm64-musl"]
+checksum = "sha256:8b8f18bd2b30346efbc698dd5a73dd7c805f3ef8380f6dfc95c768f3f1852f6a"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-linux-aarch_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/570742403"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.linux-x64"]
+checksum = "sha256:121f6c7afe1d4d0e3ea6aab9432038599250134cbf4474cb1167d2c7decd4278"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-linux-x86_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/570742434"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.linux-x64-musl"]
+checksum = "sha256:121f6c7afe1d4d0e3ea6aab9432038599250134cbf4474cb1167d2c7decd4278"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-linux-x86_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/570742434"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.macos-arm64"]
+checksum = "sha256:9cd98a532c5c5e0c4161314de0225de27e4c8a323917b6ea7b1b714d3ae23466"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-osx-aarch_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/570742436"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.macos-x64"]
+checksum = "sha256:228cc7add4616cc14ca5e80dee83209d44449a7aee95a914ae748fa374efb078"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-osx-x86_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/570742448"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.windows-x64"]
+checksum = "sha256:f0c128dc0d8492eceece83bb459a4c0e316764b929ffbf1aa416357fd644edd3"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v36.2/protoc-36.2-win64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/570742465"
+
 [[tools."aqua:rhysd/actionlint"]]
 version = "1.7.12"
 backend = "aqua:rhysd/actionlint"
@@ -262,3 +297,50 @@ url_api = "https://api.github.com/repos/connectrpc/conformance/releases/assets/6
 checksum = "sha256:14e6ffe548371c2df3812708b207ddd8c49c75babb5fa7b92f283dc9dba9b961"
 url = "https://github.com/connectrpc/conformance/releases/download/v1.0.6/connectconformance-v1.0.6-Windows-x86_64.zip"
 url_api = "https://api.github.com/repos/connectrpc/conformance/releases/assets/640907240"
+
+[[tools.ruby]]
+version = "4.0.6"
+backend = "core:ruby"
+specifiers = ["4.0.6"]
+
+[tools.ruby.options]
+compile = "false"
+precompiled_url = "jdx/ruby"
+ruby_build_repo = "https://github.com/rbenv/ruby-build.git"
+ruby_install = "false"
+
+[tools.ruby."platforms.linux-arm64"]
+checksum = "sha256:9c76db3d2d24ddbbcc2b73f552a196933832200023ef16668a812175574da690"
+url = "https://github.com/jdx/ruby/releases/download/4.0.6-2/ruby-4.0.6.arm64_linux.tar.gz"
+provenance = "github-attestations"
+
+[tools.ruby."platforms.linux-arm64-musl"]
+checksum = "sha256:837d299e8f7ddf2be31a229a7a7e019d354979825117989acb3b32b1a9be262a"
+url = "https://cache.ruby-lang.org/pub/ruby/4.0/ruby-4.0.6.tar.gz"
+
+[tools.ruby."platforms.linux-x64"]
+checksum = "sha256:fa0c88ecb8c4df065b132f624578af1cafba87b5aa2a79742fac10fefd49c6c1"
+url = "https://github.com/jdx/ruby/releases/download/4.0.6-2/ruby-4.0.6.x86_64_linux.tar.gz"
+provenance = "github-attestations"
+
+[tools.ruby."platforms.linux-x64-musl"]
+checksum = "sha256:837d299e8f7ddf2be31a229a7a7e019d354979825117989acb3b32b1a9be262a"
+url = "https://cache.ruby-lang.org/pub/ruby/4.0/ruby-4.0.6.tar.gz"
+
+[tools.ruby."platforms.macos-arm64"]
+checksum = "sha256:f219dab680aae07600e76956ddf63567b360fa8f50ba026130cc275d77a55bcb"
+url = "https://github.com/jdx/ruby/releases/download/4.0.6-2/ruby-4.0.6.macos.tar.gz"
+provenance = "github-attestations"
+
+[tools.ruby."platforms.macos-x64"]
+checksum = "sha256:837d299e8f7ddf2be31a229a7a7e019d354979825117989acb3b32b1a9be262a"
+url = "https://cache.ruby-lang.org/pub/ruby/4.0/ruby-4.0.6.tar.gz"
+
+[[tools.ruby]]
+version = "4.0.6"
+backend = "core:ruby"
+specifiers = ["4.0.6"]
+
+[tools.ruby."platforms.windows-x64"]
+checksum = "sha256:328d7a86bea2f4c432783025050c9ffa1c36fcfc54ebccc466b63450ec3af223"
+url = "https://github.com/oneclick/rubyinstaller2/releases/download/RubyInstaller-4.0.6-1/rubyinstaller-4.0.6-1-x64.7z"
