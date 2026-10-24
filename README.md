@@ -2,11 +2,12 @@
 
 connect_rpc_httpx is a [Connect](https://connectrpc.com/) RPC client for Ruby that speaks the Connect protocol over [httpx](https://gitlab.com/os85/httpx). Its companion protoc plugin, protoc-gen-connect-ruby, generates the clients from your `.proto` files: each service becomes a plain Ruby class with one method per RPC, along with an RBS signature so Steep can check the calls.
 
-Unary RPCs are supported today, and checked against the official [Connect conformance suite](conformance/). Streaming is not implemented yet.
+Unary RPCs, client and server streams, and half-duplex bidirectional streams are supported, and checked against the official [Connect conformance suite](conformance/).
 
 ## Features
 
 - A client per service, in the module protoc's Ruby generator puts the messages in, with snake_case methods
+- Server streams yield messages to a block or as an Enumerable; client streams take any Enumerable, including a lazy one
 - RBS signatures for every generated client, typed against your message classes
 - One client instance can be shared between threads: it is frozen after construction, and httpx pools its connections
 - Connect GET for RPCs marked `idempotency_level = NO_SIDE_EFFECTS`, so caches and proxies can serve them
@@ -71,8 +72,8 @@ The [connect_rpc_httpx README](connect_rpc_httpx/) covers client options, per-ca
 
 ## Caveats
 
-- Streaming RPCs, the gRPC and gRPC-Web protocols, and request compression are not implemented. Streaming RPCs are left out of the generated classes.
-- A unary call blocks its thread and cannot be cancelled from another one.
+- Full-duplex bidirectional streaming, the gRPC and gRPC-Web protocols, and request compression are not implemented. A bidirectional RPC sends all of its requests before reading responses.
+- A call blocks its thread and cannot be cancelled from another one. A stream is cancelled by leaving its iteration.
 - Type-checking calls into generated clients needs RBS for the message classes too, which this plugin does not write.
 
 ## Related

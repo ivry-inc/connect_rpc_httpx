@@ -1,5 +1,7 @@
 # Copyright 2026 IVRy Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-# A unary call blocks its thread, and the client has no API to cancel it from another.
-Client Cancellation/**/unary/cancel-after-close-send
+# A call blocks its thread, and the client has no API to cancel it from another. Leaving a
+# stream's iteration early does cancel it, but the suite expects the call to go on and report
+# the cancellation.
+Client Cancellation/**

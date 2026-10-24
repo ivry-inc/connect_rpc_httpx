@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Scopes the suite to what connect_rpc_httpx implements: the Connect protocol, unary over POST
-# and GET, without compression. HTTP/2 and TLS come from httpx.
+# and GET, and client, server and half-duplex bidirectional streams, without compression.
+# HTTP/2 and TLS come from httpx.
 features:
   versions:
     - HTTP_VERSION_1
@@ -16,10 +17,13 @@ features:
     - COMPRESSION_IDENTITY
   streamTypes:
     - STREAM_TYPE_UNARY
+    - STREAM_TYPE_CLIENT_STREAM
+    - STREAM_TYPE_SERVER_STREAM
+    - STREAM_TYPE_HALF_DUPLEX_BIDI_STREAM
   supportsH2c: true
   supportsTls: true
   supportsTlsClientCerts: true
   supportsTrailers: false
-  supportsHalfDuplexBidiOverHttp1: false
+  supportsHalfDuplexBidiOverHttp1: true
   supportsConnectGet: true
   supportsMessageReceiveLimit: false

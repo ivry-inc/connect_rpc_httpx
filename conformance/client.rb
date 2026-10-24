@@ -21,11 +21,14 @@ V1 = Connectrpc::Conformance::V1
 SERVICE = V1::ConformanceServiceClient
 WORKERS = 8
 
-# The unary RPCs of the service, with the request type each expects inside its Any.
+# The RPCs of the service, with the request type each expects inside its Any.
 METHODS = {
   "Unary" => [SERVICE::UNARY, V1::UnaryRequest],
   "IdempotentUnary" => [SERVICE::IDEMPOTENT_UNARY, V1::IdempotentUnaryRequest],
   "Unimplemented" => [SERVICE::UNIMPLEMENTED, V1::UnimplementedRequest],
+  "ServerStream" => [SERVICE::SERVER_STREAM, V1::ServerStreamRequest],
+  "ClientStream" => [SERVICE::CLIENT_STREAM, V1::ClientStreamRequest],
+  "BidiStream" => [SERVICE::BIDI_STREAM, V1::BidiStreamRequest],
 }.freeze
 
 def read_message(io, message_class)
@@ -84,7 +87,7 @@ def run_rpc(request, sessions)
 
   # Read by name, because a "method" accessor would shadow Object#method.
   method, request_class = METHODS.fetch(request["method"]) { raise "unsupported method #{request["method"]}" }
-  message = request.request_messages.first.unpack(request_class) or raise "request is not a #{request_class}"
+  messages = request.request_messages.map { |any| any.unpack(request_class) or raise "request is not a #{request_class}" }
 
   scheme = request.server_tls_cert.empty? ? "http" : "https"
   client = SERVICE.new(
@@ -93,22 +96,62 @@ def run_rpc(request, sessions)
     http: sessions.for(request),
     http_get: request.use_get_http_method,
   )
-  timeout = request.has_timeout_ms? ? request.timeout_ms / 1000.0 : nil
+  options = {headers: headers_from(request), timeout: request.has_timeout_ms? ? request.timeout_ms / 1000.0 : nil}
 
-  begin
-    response = client.call_unary(method, message, headers: headers_from(request), timeout:)
-    V1::ClientResponseResult.new(
-      response_headers: headers_to(response.headers),
-      payloads: [response.message.payload || V1::ConformancePayload.new],
-      response_trailers: headers_to(response.trailers),
-    )
-  rescue ConnectRpcHttpx::Error => e
-    V1::ClientResponseResult.new(
-      response_headers: headers_to(e.headers),
-      error: V1::Error.new(code: :"CODE_#{e.code.upcase}", message: e.message, details: e.details),
-      response_trailers: headers_to(e.trailers),
-    )
+  case method.stream_type
+  when :unary
+    single_result { client.call_unary(method, messages.first, **options) }
+  when :client_stream
+    single_result { client.call_client_stream(method, delayed(messages, request.request_delay_ms), **options) }
+  when :server_stream
+    stream_result(client.call_server_stream(method, messages.first, **options))
+  when :bidi_stream
+    stream_result(client.call_bidi_stream(method, delayed(messages, request.request_delay_ms), **options))
   end
+end
+
+# The suite asks for a pause before each request message of a stream.
+def delayed(messages, delay_ms)
+  return messages unless delay_ms.positive?
+
+  Enumerator.new do |out|
+    messages.each do |message|
+      sleep(delay_ms / 1000.0)
+      out << message
+    end
+  end
+end
+
+def single_result
+  response = yield
+  V1::ClientResponseResult.new(
+    response_headers: headers_to(response.headers),
+    payloads: [response.message.payload || V1::ConformancePayload.new],
+    response_trailers: headers_to(response.trailers),
+  )
+rescue ConnectRpcHttpx::Error => e
+  error_result(e, e.headers)
+end
+
+def stream_result(stream)
+  payloads = []
+  stream.each { |message| payloads << (message.payload || V1::ConformancePayload.new) }
+  V1::ClientResponseResult.new(
+    response_headers: headers_to(stream.headers || {}),
+    payloads:,
+    response_trailers: headers_to(stream.trailers || {}),
+  )
+rescue ConnectRpcHttpx::Error => e
+  error_result(e, stream.headers || e.headers, payloads)
+end
+
+def error_result(error, headers, payloads = [])
+  V1::ClientResponseResult.new(
+    response_headers: headers_to(headers),
+    payloads:,
+    error: V1::Error.new(code: :"CODE_#{error.code.upcase}", message: error.message, details: error.details),
+    response_trailers: headers_to(error.trailers),
+  )
 end
 
 def handle(request, sessions)
