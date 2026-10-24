@@ -54,19 +54,19 @@ module ConnectRpcHttpx
     # : [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
     def call_unary: [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
 
-    # : (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
-    private def post: (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+    # : [I, O] (MethodDescriptor[I, O] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+    private def post: [I, O] (MethodDescriptor[I, O] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
 
     # The query parameters keep the order the Connect conformance suite expects, which also keeps
     # the URL stable for caches.
-    # : (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
-    private def get: (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+    # : [I, O] (MethodDescriptor[I, O] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+    private def get: [I, O] (MethodDescriptor[I, O] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
 
     # : (seconds? timeout) -> Hash[Symbol, untyped]
     private def timeout_options: (seconds? timeout) -> Hash[Symbol, untyped]
 
-    # : [O] (MethodDescriptor[untyped, O] method, HTTPX::response response, seconds? timeout) -> UnaryResponse[O]
-    private def read_unary_response: [O] (MethodDescriptor[untyped, O] method, HTTPX::response response, seconds? timeout) -> UnaryResponse[O]
+    # : [I, O] (MethodDescriptor[I, O] method, HTTPX::response response, seconds? timeout) -> UnaryResponse[O]
+    private def read_unary_response: [I, O] (MethodDescriptor[I, O] method, HTTPX::response response, seconds? timeout) -> UnaryResponse[O]
 
     # A response that is not valid HTTP came from the server, so it is :unknown rather than a
     # failure to reach the server.

@@ -84,7 +84,7 @@ module ConnectRpcHttpx
       read_unary_response(method, response, timeout)
     end
 
-    #: (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+    #: [I, O] (MethodDescriptor[I, O] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
     private def post(method, body, headers, timeout)
       headers["connect-protocol-version"] = ["1"]
       headers["content-type"] = [codec.content_type]
@@ -93,7 +93,7 @@ module ConnectRpcHttpx
 
     # The query parameters keep the order the Connect conformance suite expects, which also keeps
     # the URL stable for caches.
-    #: (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+    #: [I, O] (MethodDescriptor[I, O] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
     private def get(method, body, headers, timeout)
       query = URI.encode_www_form(
         connect: "v1",
@@ -109,7 +109,7 @@ module ConnectRpcHttpx
       timeout ? {timeout: {total_request_timeout: timeout}} : {}
     end
 
-    #: [O] (MethodDescriptor[untyped, O] method, HTTPX::response response, seconds? timeout) -> UnaryResponse[O]
+    #: [I, O] (MethodDescriptor[I, O] method, HTTPX::response response, seconds? timeout) -> UnaryResponse[O]
     private def read_unary_response(method, response, timeout)
       if response.is_a?(HTTPX::ErrorResponse)
         error = response.error
