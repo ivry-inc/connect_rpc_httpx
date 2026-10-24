@@ -1,0 +1,5 @@
+# Generated from lib/protoc_gen_connect_ruby/version.rb with RBS::Inline
+
+module ProtocGenConnectRuby
+  VERSION: String
+end

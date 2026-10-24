@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+bundle install
+bundle exec rbs collection install
+if command -v hk >/dev/null 2>&1; then hk install; fi

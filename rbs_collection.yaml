@@ -1,0 +1,53 @@
+# Signatures for third-party gems, fetched from ruby/gem_rbs_collection.
+# Run `bundle exec rbs collection install` after changing this file.
+sources:
+  # google-protobuf ships no signatures, and ruby/gem_rbs_collection's entry stops at 3.22,
+  # before the 4.x API both gems are written against.
+  - type: local
+    path: rbs
+
+  - type: git
+    name: ruby/gem_rbs_collection
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    revision: main
+    repo_dir: gems
+
+path: .gem_rbs_collection
+
+gems:
+  # The gems in this repository; each Steep target reads their sig/ directly.
+  - name: connect_rpc_httpx
+    ignore: true
+  - name: protoc_gen_connect_ruby
+    ignore: true
+  # Their runtime dependencies, which ignoring them above leaves out.
+  - name: base64
+  - name: google-protobuf
+  - name: httpx
+  # Development-only tooling; nothing in lib/ calls it.
+  - name: rbs
+    ignore: true
+  - name: steep
+    ignore: true
+  - name: rdoc
+    ignore: true
+  - name: rspec
+    ignore: true
+  - name: rspec-core
+    ignore: true
+  - name: rspec-expectations
+    ignore: true
+  - name: rspec-mocks
+    ignore: true
+  - name: rspec-support
+    ignore: true
+  - name: rubocop
+    ignore: true
+  - name: rubocop-ast
+    ignore: true
+  - name: webmock
+    ignore: true
+  - name: yard
+    ignore: true
+  - name: yard-sig
+    ignore: true

@@ -1,0 +1,9 @@
+--output-dir doc/yard
+--markup markdown
+--load yard/rbs_inline.rb
+--no-private
+connect_rpc_httpx/lib/**/*.rb
+protoc_gen_connect_ruby/lib/**/*.rb
+-
+connect_rpc_httpx/README.md
+protoc_gen_connect_ruby/README.md

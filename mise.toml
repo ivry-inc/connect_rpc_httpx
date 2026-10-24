@@ -1,0 +1,23 @@
+[tools]
+ruby = "4.0.6"
+# Generates the conformance suite's protos and clients from the BSR.
+"aqua:bufbuild/buf" = "1.75.0"
+# The conformance runner. Its version also names the BSR module that rake conformance generates
+# from, so the two always match.
+"github:connectrpc/conformance" = "1.0.6"
+"aqua:jdx/hk" = "2.8.1"
+"aqua:apple/pkl" = "0.32.2"
+"aqua:rhysd/actionlint" = "1.7.12"
+"aqua:zizmorcore/zizmor" = "1.31.1"
+
+[settings]
+disable_backends = ["asdf"]
+
+[settings.ruby]
+compile = false
+
+[tasks.setup]
+run = "bin/setup"
+
+[tasks.pre-commit]
+run = "hk run pre-commit"

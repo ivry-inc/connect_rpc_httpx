@@ -1,0 +1,57 @@
+---
+path: ".gem_rbs_collection"
+gems:
+- name: base64
+  version: 0.3.0
+  source:
+    type: rubygems
+- name: bigdecimal
+  version: 4.1.3
+  source:
+    type: rubygems
+- name: fileutils
+  version: '0'
+  source:
+    type: stdlib
+- name: google-protobuf
+  version: '4.26'
+  source:
+    type: local
+    path: rbs
+- name: http-2
+  version: 1.3.0
+  source:
+    type: rubygems
+- name: httpx
+  version: 1.9.0
+  source:
+    type: rubygems
+- name: io-console
+  version: '0'
+  source:
+    type: stdlib
+- name: pp
+  version: '0'
+  source:
+    type: stdlib
+- name: prettyprint
+  version: '0'
+  source:
+    type: stdlib
+- name: prism
+  version: 1.9.0
+  source:
+    type: rubygems
+- name: rake
+  version: '13.0'
+  source:
+    type: git
+    name: ruby/gem_rbs_collection
+    revision: ddaa559df3fbd84ca630e937e2eb59b3e1b62e3b
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    repo_dir: gems
+- name: time
+  version: '0'
+  source:
+    type: stdlib
+gemfile_lock_path: Gemfile.lock

@@ -1,0 +1,141 @@
+# The google-protobuf 4.x surface this gem uses. Hand-written because the gem ships no
+# signatures and ruby/gem_rbs_collection's entry stops at 3.22, whose non-generic RepeatedField
+# contradicts the signatures protovalidate ships. Narrow on purpose: every declaration here is
+# reached from lib/.
+module Google
+  module Protobuf
+    class Error < StandardError
+    end
+
+    class ParseError < Error
+    end
+
+    class TypeError < ::TypeError
+    end
+
+    class RepeatedField[T]
+      include Enumerable[T]
+
+      def each: () { (T) -> void } -> self
+      def size: () -> Integer
+      def <<: (T) -> self
+      def to_ary: () -> Array[T]
+    end
+
+    module MessageExts
+      def to_h: () -> Hash[Symbol, untyped]
+      def dup: () -> self
+      def ==: (untyped) -> bool
+      def []: (String field) -> untyped
+      def []=: (String field, untyped value) -> void
+
+      module ClassMethods
+        def descriptor: () -> Descriptor
+        def encode: (untyped message, **untyped options) -> String
+        def decode: (String bytes, **untyped options) -> untyped
+        def encode_json: (untyped message, **untyped options) -> String
+        def decode_json: (String json, **untyped options) -> untyped
+      end
+    end
+
+    class AbstractMessage
+      include MessageExts
+      extend MessageExts::ClassMethods
+
+      # Generated message classes take their fields as keywords, or as one Hash.
+      def initialize: (?untyped initial_values, **untyped) -> void
+    end
+
+    # A message class as a value: what DescriptorPool hands back and what callers pass around.
+    interface _MessageClass
+      def ===: (untyped) -> bool
+      def descriptor: () -> Descriptor
+      def name: () -> String?
+      # Fields come as keywords, or as one Hash of initial values.
+      def new: (?untyped initial_values, **untyped) -> untyped
+      def encode: (untyped message, **untyped options) -> String
+      def decode: (String bytes, **untyped options) -> untyped
+      def encode_json: (untyped message, **untyped options) -> String
+      def decode_json: (String json, **untyped options) -> untyped
+    end
+
+    class DescriptorPool
+      def self.generated_pool: () -> DescriptorPool
+
+      # Returns a Descriptor, EnumDescriptor or FieldDescriptor (for an extension) depending on
+      # what the name refers to, so callers narrow it themselves.
+      def lookup: (String name) -> untyped
+    end
+
+    class Descriptor
+      include Enumerable[FieldDescriptor]
+
+      def each: () { (FieldDescriptor) -> void } -> self
+      def name: () -> String
+      def lookup: (String name) -> FieldDescriptor?
+      def msgclass: () -> _MessageClass
+      def to_proto: () -> untyped
+    end
+
+    class FieldDescriptor
+      def name: () -> String
+      def json_name: () -> String
+      def number: () -> Integer
+      def type: () -> Symbol
+      def subtype: () -> (Descriptor | EnumDescriptor)?
+
+      # Reads this field off a message, which for an extension field is how a custom option is
+      # read off an options message.
+      def get: (untyped message) -> untyped
+    end
+
+class FileDescriptor
+  def name: () -> String
+  def to_proto: () -> untyped
+end
+
+    class EnumDescriptor
+      include Enumerable[[Symbol, Integer]]
+
+      def each: () { ([Symbol, Integer]) -> void } -> self
+      def name: () -> String
+      def enummodule: () -> untyped
+      def to_proto: () -> EnumDescriptorProto
+    end
+
+    class EnumDescriptorProto < AbstractMessage
+      def name: () -> String
+      def value: () -> RepeatedField[EnumValueDescriptorProto]
+    end
+
+    class EnumValueDescriptorProto < AbstractMessage
+      def name: () -> String
+      def number: () -> Integer
+      def options: () -> EnumValueOptions?
+    end
+
+    class EnumValueOptions < AbstractMessage
+    end
+
+    class Any < AbstractMessage
+      def self.pack: (untyped message, ?String type_url_prefix) -> Any
+      def type_url: () -> String
+      def value: () -> String
+      def unpack: (untyped message_class) -> untyped
+    end
+
+    class Timestamp < AbstractMessage
+      def self.from_time: (Time time) -> Timestamp
+      def seconds: () -> Integer
+      def nanos: () -> Integer
+      def to_time: () -> Time
+      def to_i: () -> Integer
+      def to_f: () -> Float
+    end
+
+    class Duration < AbstractMessage
+      def seconds: () -> Integer
+      def nanos: () -> Integer
+    end
+  end
+end

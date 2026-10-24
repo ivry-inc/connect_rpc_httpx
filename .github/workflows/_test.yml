@@ -1,0 +1,95 @@
+# The checks `rake`, `rake conformance` and `hk check` run locally. No secrets required.
+name: Test
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  rspec:
+    name: "rspec (Ruby ${{ matrix.ruby }})"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    # The gemspecs support >= 3.4, so both ends of that range are exercised.
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["3.4", "4.0"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: rspec
+        run: bundle exec rake spec
+
+  steep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+
+      # Keyed on the lock file, so the gem_rbs_collection clone is reused until a
+      # signature dependency actually moves.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .gem_rbs_collection
+          key: rbs-collection-${{ hashFiles('rbs_collection.lock.yaml') }}
+          restore-keys: rbs-collection-
+
+      # --frozen installs strictly from the lock file instead of regenerating it, so
+      # CI checks against the signature versions that were reviewed.
+      - name: rbs collection install
+        run: bundle exec rbs collection install --frozen
+
+      - name: regenerate inline signatures
+        run: bundle exec rake rbs
+
+      # A `#:` annotation can change without `rake rbs` being run, which would leave
+      # the checked-in signatures stale and the type check checking the wrong shape.
+      - name: check sig/generated is up to date
+        run: git diff --exit-code -- '*/sig/generated'
+
+      - name: steep check
+        run: bundle exec steep check
+
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    env:
+      # Ruby comes from setup-ruby, which also caches the bundle.
+      MISE_DISABLE_TOOLS: ruby
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@7f797815d8adceb1c412e7abefdd1ab4abc47a5f # v1.335.0
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
+
+      # steep runs in its own job, which prepares the rbs collection it needs.
+      - name: hk check
+        run: hk check --all --skip-step steep
