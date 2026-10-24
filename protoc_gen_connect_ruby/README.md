@@ -2,7 +2,7 @@
 
 `protoc-gen-connect-ruby` is a protoc / buf plugin that writes a [Connect](https://connectrpc.com/) client class for every service in your `.proto` files, along with an RBS signature for it. The generated clients run on [connect_rpc_httpx](../connect_rpc_httpx/), which speaks the Connect protocol over [httpx](https://gitlab.com/os85/httpx).
 
-Unary RPCs are supported, over HTTP POST or, for methods marked `idempotency_level = NO_SIDE_EFFECTS`, Connect GET. Streaming RPCs are left out of the generated classes for now.
+Unary RPCs (over HTTP POST, or Connect GET for methods marked `idempotency_level = NO_SIDE_EFFECTS`), client and server streams, and half-duplex bidirectional streams are supported.
 
 ## Installation
 
@@ -46,7 +46,7 @@ response = client.greet(Acme::Greet::V1::GreetRequest.new(name: "Ruby"))
 response.greeting
 ```
 
-A method takes `headers:` and `timeout:` (seconds) keywords, returns the response message, and raises `ConnectRpcHttpx::Error` when the RPC fails. See [connect_rpc_httpx](../connect_rpc_httpx/) for the client options, response metadata and errors.
+A method takes `headers:` and `timeout:` (seconds) keywords, and raises `ConnectRpcHttpx::Error` when the RPC fails. Unary and client-streaming methods return the response message; client-streaming and bidirectional methods take an Enumerable of requests; server-streaming and bidirectional methods yield the responses to a block, or return a `ConnectRpcHttpx::ResponseStream` to iterate. See [connect_rpc_httpx](../connect_rpc_httpx/) for the client options, response metadata and errors.
 
 An RPC whose Ruby name would override a method every client has, such as `Class` or `Headers`, gets a trailing underscore: `class_`, `headers_`.
 

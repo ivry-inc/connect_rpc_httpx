@@ -53,6 +53,13 @@ RSpec.describe("protoc-gen-connect-ruby") do
     expect(stub).to have_been_requested
   end
 
+  it "describes each RPC's stream type" do
+    service = Acme::Greet::V1::GreetServiceClient
+
+    expect([service::GREET, service::GREET_STREAM, service::GREET_MANY, service::CONVERSE].map(&:stream_type))
+      .to eq([:unary, :server_stream, :client_stream, :bidi_stream])
+  end
+
   it "resolves message types across files and packages" do
     expect(Acme::Shapes::Shape_serviceClient::DESCRIBE.output).to eq(Acme::Greet::V1::GreetResponse)
   end

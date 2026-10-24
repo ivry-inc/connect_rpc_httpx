@@ -51,7 +51,45 @@ module Acme
           call_unary(HEADERS, request, headers:, timeout:).message
         end
 
-        # GreetStream is a streaming RPC, which this generator does not support yet.
+        GREET_STREAM = ::ConnectRpcHttpx::MethodDescriptor.new(
+          service: SERVICE_NAME,
+          name: "GreetStream",
+          input: ::Acme::Greet::V1::GreetRequest,
+          output: ::Acme::Greet::V1::GreetResponse,
+          idempotency: :idempotency_unknown,
+          stream_type: :server_stream,
+        )
+
+        # Greets once per second.
+        def greet_stream(request, headers: {}, timeout: self.timeout, &)
+          call_server_stream(GREET_STREAM, request, headers:, timeout:, &)
+        end
+
+        GREET_MANY = ::ConnectRpcHttpx::MethodDescriptor.new(
+          service: SERVICE_NAME,
+          name: "GreetMany",
+          input: ::Acme::Greet::V1::GreetRequest,
+          output: ::Acme::Greet::V1::GreetResponse,
+          idempotency: :idempotency_unknown,
+          stream_type: :client_stream,
+        )
+
+        def greet_many(requests, headers: {}, timeout: self.timeout)
+          call_client_stream(GREET_MANY, requests, headers:, timeout:).message
+        end
+
+        CONVERSE = ::ConnectRpcHttpx::MethodDescriptor.new(
+          service: SERVICE_NAME,
+          name: "Converse",
+          input: ::Acme::Greet::V1::GreetRequest,
+          output: ::Acme::Greet::V1::GreetResponse,
+          idempotency: :idempotency_unknown,
+          stream_type: :bidi_stream,
+        )
+
+        def converse(requests, headers: {}, timeout: self.timeout, &)
+          call_bidi_stream(CONVERSE, requests, headers:, timeout:, &)
+        end
       end
     end
   end

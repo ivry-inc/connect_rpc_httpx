@@ -40,22 +40,25 @@ module ProtocGenConnectRuby
     # : (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
     private def ruby_client: (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
 
+    # : (Writer out, Google::Protobuf::MethodDescriptorProto method, String constant, Symbol type) -> void
+    private def ruby_method_definition: (Writer out, Google::Protobuf::MethodDescriptorProto method, String constant, Symbol type) -> void
+
     # : (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
     private def rbs_client: (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
 
-    # Unary methods paired with their index in the service, which SourceCodeInfo paths use.
-    # : (Google::Protobuf::ServiceDescriptorProto service, Integer service_index) -> Array[[Google::Protobuf::MethodDescriptorProto, Integer]]
-    private def unary_methods: (Google::Protobuf::ServiceDescriptorProto service, Integer service_index) -> Array[[ Google::Protobuf::MethodDescriptorProto, Integer ]]
+    # : (Symbol type, String input, String output) -> String
+    private def rbs_method_type: (Symbol type, String input, String output) -> String
 
-    # : (Google::Protobuf::ServiceDescriptorProto service) -> Array[Google::Protobuf::MethodDescriptorProto]
-    private def streaming_methods: (Google::Protobuf::ServiceDescriptorProto service) -> Array[Google::Protobuf::MethodDescriptorProto]
+    # Methods paired with their index in the service, which SourceCodeInfo paths use.
+    # : (Google::Protobuf::ServiceDescriptorProto service) -> Array[[Google::Protobuf::MethodDescriptorProto, Integer]]
+    private def indexed_methods: (Google::Protobuf::ServiceDescriptorProto service) -> Array[[ Google::Protobuf::MethodDescriptorProto, Integer ]]
 
     # Read by name, because a "method" accessor would shadow Object#method.
     # : (Google::Protobuf::ServiceDescriptorProto service) -> Array[Google::Protobuf::MethodDescriptorProto]
     private def service_methods: (Google::Protobuf::ServiceDescriptorProto service) -> Array[Google::Protobuf::MethodDescriptorProto]
 
-    # : (Google::Protobuf::MethodDescriptorProto method) -> bool
-    private def streaming?: (Google::Protobuf::MethodDescriptorProto method) -> bool
+    # : (Google::Protobuf::MethodDescriptorProto method) -> Symbol
+    private def stream_type: (Google::Protobuf::MethodDescriptorProto method) -> Symbol
 
     # : (Google::Protobuf::ServiceDescriptorProto service, Array[Google::Protobuf::MethodDescriptorProto] methods) -> void
     private def check_collisions: (Google::Protobuf::ServiceDescriptorProto service, Array[Google::Protobuf::MethodDescriptorProto] methods) -> void

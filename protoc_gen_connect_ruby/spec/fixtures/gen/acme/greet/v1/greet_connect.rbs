@@ -22,6 +22,19 @@ module Acme
         HEADERS: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetRequest::Nested]
 
         def headers_: (::Acme::Greet::V1::GreetRequest request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetRequest::Nested
+
+        GREET_STREAM: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetResponse]
+
+        # Greets once per second.
+        def greet_stream: (::Acme::Greet::V1::GreetRequest request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) ?{ (::Acme::Greet::V1::GreetResponse message) -> void } -> ::ConnectRpcHttpx::ResponseStream[::Acme::Greet::V1::GreetResponse]
+
+        GREET_MANY: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetResponse]
+
+        def greet_many: (::Enumerable[::Acme::Greet::V1::GreetRequest] requests, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
+
+        CONVERSE: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetResponse]
+
+        def converse: (::Enumerable[::Acme::Greet::V1::GreetRequest] requests, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) ?{ (::Acme::Greet::V1::GreetResponse message) -> void } -> ::ConnectRpcHttpx::ResponseStream[::Acme::Greet::V1::GreetResponse]
       end
     end
   end

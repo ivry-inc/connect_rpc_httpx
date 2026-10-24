@@ -73,26 +73,46 @@ module ProtocGenConnectRuby
       comment(out, [SERVICE_FIELD, index])
       out.block("class #{client_class(service)} < ::ConnectRpcHttpx::Client") do
         out.line("SERVICE_NAME = #{full_name(service).inspect}")
-        unary_methods(service, index).each do |method, method_index|
+        indexed_methods(service).each do |method, method_index|
+          constant = method_constant(method)
+          type = stream_type(method)
           out.line
-          out.line("#{method_constant(method)} = ::ConnectRpcHttpx::MethodDescriptor.new(")
+          out.line("#{constant} = ::ConnectRpcHttpx::MethodDescriptor.new(")
           out.indent do
             out.line("service: SERVICE_NAME,")
             out.line("name: #{method.name.inspect},")
             out.line("input: #{@type_names.fetch(method.input_type)},")
             out.line("output: #{@type_names.fetch(method.output_type)},")
             out.line("idempotency: :#{idempotency(method)},")
+            out.line("stream_type: :#{type},") unless type == :unary
           end
           out.line(")")
           out.line
           comment(out, [SERVICE_FIELD, index, METHOD_FIELD, method_index])
-          out.block("def #{ruby_method(method)}(request, headers: {}, timeout: self.timeout)") do
-            out.line("call_unary(#{method_constant(method)}, request, headers:, timeout:).message")
-          end
+          ruby_method_definition(out, method, constant, type)
         end
-        streaming_methods(service).each do |method|
-          out.line
-          out.line("# #{method.name} is a streaming RPC, which this generator does not support yet.")
+      end
+    end
+
+    #: (Writer out, Google::Protobuf::MethodDescriptorProto method, String constant, Symbol type) -> void
+    private def ruby_method_definition(out, method, constant, type)
+      name = ruby_method(method)
+      case type
+      when :unary
+        out.block("def #{name}(request, headers: {}, timeout: self.timeout)") do
+          out.line("call_unary(#{constant}, request, headers:, timeout:).message")
+        end
+      when :client_stream
+        out.block("def #{name}(requests, headers: {}, timeout: self.timeout)") do
+          out.line("call_client_stream(#{constant}, requests, headers:, timeout:).message")
+        end
+      when :server_stream
+        out.block("def #{name}(request, headers: {}, timeout: self.timeout, &)") do
+          out.line("call_server_stream(#{constant}, request, headers:, timeout:, &)")
+        end
+      when :bidi_stream
+        out.block("def #{name}(requests, headers: {}, timeout: self.timeout, &)") do
+          out.line("call_bidi_stream(#{constant}, requests, headers:, timeout:, &)")
         end
       end
     end
@@ -102,32 +122,36 @@ module ProtocGenConnectRuby
       comment(out, [SERVICE_FIELD, index])
       out.block("class #{client_class(service)} < ::ConnectRpcHttpx::Client") do
         out.line("SERVICE_NAME: ::String")
-        unary_methods(service, index).each do |method, method_index|
+        indexed_methods(service).each do |method, method_index|
           input = @type_names.fetch(method.input_type)
           output = @type_names.fetch(method.output_type)
           out.line
           out.line("#{method_constant(method)}: ::ConnectRpcHttpx::MethodDescriptor[#{input}, #{output}]")
           out.line
           comment(out, [SERVICE_FIELD, index, METHOD_FIELD, method_index])
-          out.line(
-            "def #{ruby_method(method)}: (#{input} request, ?headers: #{RBS_HEADERS}, " \
-              "?timeout: #{RBS_TIMEOUT}) -> #{output}",
-          )
+          out.line("def #{ruby_method(method)}: #{rbs_method_type(stream_type(method), input, output)}")
         end
       end
     end
 
-    # Unary methods paired with their index in the service, which SourceCodeInfo paths use.
-    #: (Google::Protobuf::ServiceDescriptorProto service, Integer service_index) -> Array[[Google::Protobuf::MethodDescriptorProto, Integer]]
-    private def unary_methods(service, service_index)
-      methods = service_methods(service).each_with_index.reject { |method, _| streaming?(method) }
-      check_collisions(service, methods.map(&:first))
-      methods
+    #: (Symbol type, String input, String output) -> String
+    private def rbs_method_type(type, input, output)
+      options = "?headers: #{RBS_HEADERS}, ?timeout: #{RBS_TIMEOUT}"
+      stream = "::ConnectRpcHttpx::ResponseStream[#{output}]"
+      case type
+      when :client_stream then "(::Enumerable[#{input}] requests, #{options}) -> #{output}"
+      when :server_stream then "(#{input} request, #{options}) ?{ (#{output} message) -> void } -> #{stream}"
+      when :bidi_stream then "(::Enumerable[#{input}] requests, #{options}) ?{ (#{output} message) -> void } -> #{stream}"
+      else "(#{input} request, #{options}) -> #{output}"
+      end
     end
 
-    #: (Google::Protobuf::ServiceDescriptorProto service) -> Array[Google::Protobuf::MethodDescriptorProto]
-    private def streaming_methods(service)
-      service_methods(service).select { |method| streaming?(method) }
+    # Methods paired with their index in the service, which SourceCodeInfo paths use.
+    #: (Google::Protobuf::ServiceDescriptorProto service) -> Array[[Google::Protobuf::MethodDescriptorProto, Integer]]
+    private def indexed_methods(service)
+      methods = service_methods(service).each_with_index.to_a
+      check_collisions(service, methods.map(&:first))
+      methods
     end
 
     # Read by name, because a "method" accessor would shadow Object#method.
@@ -136,9 +160,13 @@ module ProtocGenConnectRuby
       service["method"].to_a
     end
 
-    #: (Google::Protobuf::MethodDescriptorProto method) -> bool
-    private def streaming?(method)
-      method.client_streaming || method.server_streaming
+    #: (Google::Protobuf::MethodDescriptorProto method) -> Symbol
+    private def stream_type(method)
+      if method.client_streaming
+        method.server_streaming ? :bidi_stream : :client_stream
+      else
+        method.server_streaming ? :server_stream : :unary
+      end
     end
 
     #: (Google::Protobuf::ServiceDescriptorProto service, Array[Google::Protobuf::MethodDescriptorProto] methods) -> void

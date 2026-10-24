@@ -15,7 +15,12 @@ service GreetService {
 
   rpc Headers(GreetRequest) returns (GreetRequest.Nested) {}
 
+  // Greets once per second.
   rpc GreetStream(GreetRequest) returns (stream GreetResponse) {}
+
+  rpc GreetMany(stream GreetRequest) returns (GreetResponse) {}
+
+  rpc Converse(stream GreetRequest) returns (stream GreetResponse) {}
 }
 
 message GreetRequest {
