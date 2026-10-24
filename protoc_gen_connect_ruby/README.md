@@ -36,7 +36,7 @@ or with protoc directly:
 protoc --ruby_out=lib/gen --connect-ruby_out=lib/gen acme/greet/v1/greet.proto
 ```
 
-For `acme/greet/v1/greet.proto`, this writes `acme/greet/v1/greet_connect.rb` and `greet_connect.rbs` next to protoc's `greet_pb.rb`. Each service becomes a `<Service>Client` class in the same module as its messages, with one method per RPC, named in snake_case:
+For `acme/greet/v1/greet.proto`, this writes `acme/greet/v1/greet_connect.rb` and `greet_connect.rbs` next to protoc's `greet_pb.rb`. Like protoc's Ruby output, the generated files require each other by path, so the output directory (`lib/gen` here) has to be on the load path. Each service becomes a `<Service>Client` class in the same module as its messages, with one method per RPC, named in snake_case:
 
 ```ruby
 require "acme/greet/v1/greet_connect"
