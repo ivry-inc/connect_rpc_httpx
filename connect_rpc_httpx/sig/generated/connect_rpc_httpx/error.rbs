@@ -1,0 +1,37 @@
+# Generated from lib/connect_rpc_httpx/error.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # A failed RPC: the server's Connect error, or a client-side failure expressed as one.
+  #
+  # Response headers and trailers are kept when the server sent any, so error metadata is
+  # readable the same way as a successful response's.
+  class Error < StandardError
+    attr_reader code: Symbol
+
+    # Error details, each a google.protobuf.Any. Unpack one with +Any#unpack+.
+    attr_reader details: Array[Google::Protobuf::Any]
+
+    attr_reader headers: Hash[String, Array[String]]
+
+    attr_reader trailers: Hash[String, Array[String]]
+
+    # : (Symbol code, ?String? message, ?details: Array[Google::Protobuf::Any], ?headers: Hash[String, Array[String]], ?trailers: Hash[String, Array[String]]) -> void
+    def initialize: (Symbol code, ?String? message, ?details: Array[Google::Protobuf::Any], ?headers: Hash[String, Array[String]], ?trailers: Hash[String, Array[String]]) -> void
+
+    # Builds the error a unary response with a non-200 status stands for. A body that is not a
+    # Connect error falls back to the protocol's HTTP status mapping.
+    # : (status: Integer, content_type: String?, body: String, headers: Hash[String, Array[String]], trailers: Hash[String, Array[String]]) -> Error
+    def self.from_unary_response: (status: Integer, content_type: String?, body: String, headers: Hash[String, Array[String]], trailers: Hash[String, Array[String]]) -> Error
+
+    # : (String body) -> Hash[String, untyped]?
+    def self.parse_wire_error: (String body) -> Hash[String, untyped]?
+
+    # Malformed entries are skipped rather than failing the whole error.
+    # : (untyped details) -> Array[Google::Protobuf::Any]
+    def self.parse_details: (untyped details) -> Array[Google::Protobuf::Any]
+
+    # Connect sends unpadded base64, and both alphabets are accepted in the wild.
+    # : (String value) -> String
+    def self.decode_base64: (String value) -> String
+  end
+end

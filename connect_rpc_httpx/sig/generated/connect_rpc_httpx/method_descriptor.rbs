@@ -1,0 +1,47 @@
+# Generated from lib/connect_rpc_httpx/method_descriptor.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # A generated protobuf message class, seen through the class methods the codecs call.
+  interface _MessageClass[M]
+    def encode: (M message) -> String
+
+    def decode: (String bytes) -> M
+
+    def encode_json: (M message) -> String
+
+    def decode_json: (String json, ?ignore_unknown_fields: bool) -> M
+  end
+
+  # One RPC of a service: where it is served and the message classes it exchanges.
+  # Generated clients hold one per method as a constant.
+  #
+  # @rbs generic I -- the request message
+  # @rbs generic O -- the response message
+  class MethodDescriptor[I, O]
+    # The idempotency_level method option values, as symbols.
+    IDEMPOTENCY_LEVELS: Array[Symbol]
+
+    # The fully-qualified service name, such as "acme.greet.v1.GreetService".
+    attr_reader service: String
+
+    # The method name as declared in the .proto file, such as "Greet".
+    attr_reader name: String
+
+    attr_reader input: _MessageClass[I]
+
+    attr_reader output: _MessageClass[O]
+
+    attr_reader idempotency: Symbol
+
+    # : (service: String, name: String, input: _MessageClass[I], output: _MessageClass[O], ?idempotency: Symbol) -> void
+    def initialize: (service: String, name: String, input: _MessageClass[I], output: _MessageClass[O], ?idempotency: Symbol) -> void
+
+    # The URL path the method is served at, relative to the server's base URL.
+    # : () -> String
+    def path: () -> String
+
+    # Whether the method may be called with Connect GET.
+    # : () -> bool
+    def no_side_effects?: () -> bool
+  end
+end

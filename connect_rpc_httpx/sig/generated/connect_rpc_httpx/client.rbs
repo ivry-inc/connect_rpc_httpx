@@ -1,0 +1,89 @@
+# Generated from lib/connect_rpc_httpx/client.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # Base class of generated Connect clients, issuing RPCs over an httpx session.
+  #
+  # A client is frozen once built and can be shared between threads. Its httpx session pools
+  # connections per session, and that pool is thread-safe.
+  #
+  #   client = Acme::Greet::V1::GreetServiceClient.new("https://api.example.com")
+  #   client.greet(Acme::Greet::V1::GreetRequest.new(name: "Ruby")).greeting
+  class Client
+    USER_AGENT: String
+
+    # connect-timeout-ms allows at most 10 digits.
+    MAX_TIMEOUT_MS: Integer
+
+    # Decoded transparently by httpx, so a response compressed with these reads as plain.
+    RESPONSE_ENCODINGS: Array[String]
+
+    # The server's base URL, without a trailing slash. RPC paths are appended to it.
+    attr_reader base_url: String
+
+    attr_reader codec: Codec::_Codec
+
+    # The httpx session RPCs are sent through.
+    attr_reader http: HTTPX::Session
+
+    # Request headers sent with every RPC, with lowercase keys.
+    attr_reader headers: Hash[String, Array[String]]
+
+    # The default deadline of an RPC, in seconds.
+    attr_reader timeout: seconds?
+
+    # Whether RPCs declared free of side effects are sent with Connect GET.
+    attr_reader http_get: bool
+
+    # Builds a client for the server at +base_url+.
+    #
+    # +codec+ is :proto or :json. +http+ is the httpx session to send through, and defaults to
+    # a persistent one owned by this client. +headers+ and +timeout+ (seconds) apply to every
+    # RPC unless a call overrides them. With +http_get+, RPCs whose idempotency_level is
+    # NO_SIDE_EFFECTS use HTTP GET, which caches and proxies can serve.
+    #
+    # : (String base_url, ?codec: Symbol, ?http: HTTPX::Session?, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?, ?http_get: bool) -> void
+    def initialize: (String base_url, ?codec: Symbol, ?http: HTTPX::Session?, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?, ?http_get: bool) -> void
+
+    # Issues a unary RPC and returns its response message with the response metadata.
+    #
+    # +headers+ are merged over the client's, replacing headers of the same name. +timeout+
+    # (seconds) replaces the client's deadline, and nil sends no deadline at all.
+    #
+    # Raises ConnectRpcHttpx::Error when the RPC fails, including transport failures.
+    #
+    # : [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
+    def call_unary: [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
+
+    # : (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+    private def post: (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+
+    # The query parameters follow the order https://connectrpc.com/docs/protocol/#unary-get-request
+    # lists them in, which keeps the URL stable for caches.
+    # : (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+    private def get: (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
+
+    # : (seconds? timeout) -> Hash[Symbol, untyped]
+    private def timeout_options: (seconds? timeout) -> Hash[Symbol, untyped]
+
+    # : [O] (MethodDescriptor[untyped, O] method, HTTPX::response response, seconds? timeout) -> UnaryResponse[O]
+    private def read_unary_response: [O] (MethodDescriptor[untyped, O] method, HTTPX::response response, seconds? timeout) -> UnaryResponse[O]
+
+    # : (String? encoding, Hash[String, Array[String]] headers, Hash[String, Array[String]] trailers) -> void
+    private def check_response_encoding: (String? encoding, Hash[String, Array[String]] headers, Hash[String, Array[String]] trailers) -> void
+
+    # A body that is not a Connect message at all is :unknown; a Connect message in another
+    # codec than requested is :internal.
+    # : (String? content_type, Hash[String, Array[String]] headers, Hash[String, Array[String]] trailers) -> void
+    private def check_response_content_type: (String? content_type, Hash[String, Array[String]] headers, Hash[String, Array[String]] trailers) -> void
+
+    # Connect unary responses carry trailers as headers with a "trailer-" prefix.
+    # : (HTTPX::Headers response_headers) -> [Hash[String, Array[String]], Hash[String, Array[String]]]
+    private def split_metadata: (HTTPX::Headers response_headers) -> [ Hash[String, Array[String]], Hash[String, Array[String]] ]
+
+    # : (seconds timeout) -> Integer
+    private def timeout_ms: (seconds timeout) -> Integer
+
+    # : (Hash[String, String | Array[String]] headers) -> Hash[String, Array[String]]
+    private def normalize_headers: (Hash[String, String | Array[String]] headers) -> Hash[String, Array[String]]
+  end
+end

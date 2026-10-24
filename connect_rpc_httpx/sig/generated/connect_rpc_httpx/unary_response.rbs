@@ -1,0 +1,20 @@
+# Generated from lib/connect_rpc_httpx/unary_response.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # A successful unary RPC: the response message and the metadata that came with it.
+  #
+  # Metadata keys are lowercase. Trailers arrive as "trailer-" prefixed headers in Connect
+  # unary responses, and are listed here without the prefix.
+  #
+  # @rbs generic O -- the response message
+  class UnaryResponse[O]
+    attr_reader message: O
+
+    attr_reader headers: Hash[String, Array[String]]
+
+    attr_reader trailers: Hash[String, Array[String]]
+
+    # : (message: O, headers: Hash[String, Array[String]], trailers: Hash[String, Array[String]]) -> void
+    def initialize: (message: O, headers: Hash[String, Array[String]], trailers: Hash[String, Array[String]]) -> void
+  end
+end

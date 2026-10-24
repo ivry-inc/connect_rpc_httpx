@@ -7,7 +7,7 @@ HTTPX_STDLIB = ["forwardable", "openssl"].freeze
 target :connect_rpc_httpx do
   signature "connect_rpc_httpx/sig"
   check "connect_rpc_httpx/lib"
-  library(*HTTPX_STDLIB)
+  library(*HTTPX_STDLIB, "json", "uri")
 end
 
 target :protoc_gen_connect_ruby do

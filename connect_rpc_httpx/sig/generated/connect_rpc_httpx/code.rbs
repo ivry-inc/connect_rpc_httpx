@@ -1,0 +1,21 @@
+# Generated from lib/connect_rpc_httpx/code.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # Connect status codes, as the snake_case symbols the protocol puts on the wire.
+  # See https://connectrpc.com/docs/protocol/#error-codes.
+  module Code
+    ALL: Array[Symbol]
+
+    # The protocol's mapping for an HTTP error response that carries no Connect error, such as
+    # one from a proxy. Statuses absent here map to :unknown.
+    HTTP_STATUS_TO_CODE: Hash[Integer, Symbol]
+
+    # Whether +code+ is one of the Connect codes.
+    # : (Symbol code) -> bool
+    def self.valid?: (Symbol code) -> bool
+
+    # The code a client reports for an HTTP error status without a Connect error body.
+    # : (Integer status) -> Symbol
+    def self.from_http_status: (Integer status) -> Symbol
+  end
+end

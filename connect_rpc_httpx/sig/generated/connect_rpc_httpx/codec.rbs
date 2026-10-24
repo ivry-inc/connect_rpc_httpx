@@ -1,0 +1,68 @@
+# Generated from lib/connect_rpc_httpx/codec.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # Message serialization for unary bodies. Both codecs delegate to google-protobuf.
+  module Codec
+    interface _Codec
+      # The codec name, as in "application/<name>" and the GET encoding parameter.
+      def name: () -> String
+
+      def content_type: () -> String
+
+      def encode: [M] (_MessageClass[M] message_class, M message) -> String
+
+      def decode: [M] (_MessageClass[M] message_class, String bytes) -> M
+    end
+
+    # The codec registered under +name+, :proto or :json.
+    # : (Symbol name) -> _Codec
+    def self.fetch: (Symbol name) -> _Codec
+
+    # The media type without parameters, lowercased.
+    # : (String? content_type) -> String?
+    def self.media_type: (String? content_type) -> String?
+
+    # The Protobuf binary format.
+    module Proto
+      NAME: String
+
+      CONTENT_TYPE: String
+
+      # : () -> String
+      def self.name: () -> String
+
+      # : () -> String
+      def self.content_type: () -> String
+
+      # : [M] (_MessageClass[M] message_class, M message) -> String
+      def self.encode: [M] (_MessageClass[M] message_class, M message) -> String
+
+      # : [M] (_MessageClass[M] message_class, String bytes) -> M
+      def self.decode: [M] (_MessageClass[M] message_class, String bytes) -> M
+    end
+
+    # The Protobuf JSON mapping.
+    module Json
+      NAME: String
+
+      CONTENT_TYPE: String
+
+      # : () -> String
+      def self.name: () -> String
+
+      # : () -> String
+      def self.content_type: () -> String
+
+      # Whether +content_type+ names JSON, ignoring parameters such as charset.
+      # : (String? content_type) -> bool
+      def self.content_type?: (String? content_type) -> bool
+
+      # : [M] (_MessageClass[M] message_class, M message) -> String
+      def self.encode: [M] (_MessageClass[M] message_class, M message) -> String
+
+      # Unknown fields are ignored, so a newer server can add fields without breaking clients.
+      # : [M] (_MessageClass[M] message_class, String bytes) -> M
+      def self.decode: [M] (_MessageClass[M] message_class, String bytes) -> M
+    end
+  end
+end
