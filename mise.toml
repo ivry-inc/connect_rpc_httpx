@@ -23,3 +23,7 @@ run = "bin/setup"
 
 [tasks.pre-commit]
 run = "hk run pre-commit"
+
+[tasks.conformance]
+description = "Run the Connect conformance suite, with buf and the runner from mise"
+run = "bundle exec rake conformance"

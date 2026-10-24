@@ -91,14 +91,14 @@ module ConnectRpcHttpx
       http.request("POST", "#{base_url}#{method.path}", headers:, body:, **timeout_options(timeout))
     end
 
-    # The query parameters follow the order https://connectrpc.com/docs/protocol/#unary-get-request
-    # lists them in, which keeps the URL stable for caches.
+    # The query parameters keep the order the Connect conformance suite expects, which also keeps
+    # the URL stable for caches.
     #: (MethodDescriptor[untyped, untyped] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
     private def get(method, body, headers, timeout)
       query = URI.encode_www_form(
         connect: "v1",
-        encoding: codec.name,
         base64: "1",
+        encoding: codec.name,
         message: Base64.urlsafe_encode64(body, padding: false),
       )
       http.request("GET", "#{base_url}#{method.path}?#{query}", headers:, **timeout_options(timeout))
@@ -113,8 +113,7 @@ module ConnectRpcHttpx
     private def read_unary_response(method, response, timeout)
       if response.is_a?(HTTPX::ErrorResponse)
         error = response.error
-        code = timeout && error.is_a?(HTTPX::TimeoutError) ? :deadline_exceeded : :unavailable
-        raise Error.new(code, "request to #{method.path} failed"), cause: error
+        raise Error.new(transport_error_code(error, timeout), "request to #{method.path} failed"), cause: error
       end
 
       headers, trailers = split_metadata(response.headers)
@@ -132,6 +131,17 @@ module ConnectRpcHttpx
         raise Error.new(:internal, "unmarshal response into #{method.name} output failed", headers:, trailers:)
       end
       UnaryResponse.new(message:, headers:, trailers:)
+    end
+
+    # A response that is not valid HTTP came from the server, so it is :unknown rather than a
+    # failure to reach the server.
+    #: (StandardError error, seconds? timeout) -> Symbol
+    private def transport_error_code(error, timeout)
+      case error
+      when HTTPX::TimeoutError then timeout ? :deadline_exceeded : :unavailable
+      when HTTPX::Parser::Error then :unknown
+      else :unavailable
+      end
     end
 
     #: (String? encoding, Hash[String, Array[String]] headers, Hash[String, Array[String]] trailers) -> void

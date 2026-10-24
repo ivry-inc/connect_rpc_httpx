@@ -1,0 +1,11 @@
+# Copyright 2026 IVRy Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# The conformance module is passed as the input by `rake conformance`, at the runner's version.
+version: v2
+clean: true
+plugins:
+  - protoc_builtin: ruby
+    out: gen
+  - local: [bundle, exec, protoc-gen-connect-ruby]
+    out: gen

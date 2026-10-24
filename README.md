@@ -12,6 +12,7 @@ mise install
 hk install
 bin/setup
 bundle exec rake            # specs and steep
+mise run conformance        # the Connect conformance suite, see conformance/
 ```
 
 ## License

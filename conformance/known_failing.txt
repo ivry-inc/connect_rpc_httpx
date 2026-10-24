@@ -1,0 +1,5 @@
+# Copyright 2026 IVRy Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# A unary call blocks its thread, and the client has no API to cancel it from another.
+Client Cancellation/**/unary/cancel-after-close-send

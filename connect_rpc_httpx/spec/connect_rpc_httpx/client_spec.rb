@@ -113,8 +113,7 @@ RSpec.describe(ConnectRpcHttpx::Client) do
 
       it "sends a side-effect-free RPC as a Connect GET" do
         message = Base64.urlsafe_encode64(TestMessages::EchoRequest.encode(request), padding: false)
-        stub = stub_request(:get, url)
-          .with(query: {"connect" => "v1", "encoding" => "proto", "base64" => "1", "message" => message})
+        stub = stub_request(:get, "#{url}?connect=v1&base64=1&encoding=proto&message=#{message}")
           .to_return(proto_response(3))
 
         expect(client.call_unary(method_descriptor, request).message.count).to eq(3)
@@ -201,6 +200,13 @@ RSpec.describe(ConnectRpcHttpx::Client) do
         expect(e.code).to eq(:unavailable)
         expect(e.cause).to be_a(HTTPX::ConnectionError)
       }
+    end
+
+    it "raises unknown for a response that is not valid HTTP" do
+      stub_request(:post, url).to_raise(HTTPX::Parser::Error.new("wrong status code (800)"))
+
+      expect { client.call_unary(method_descriptor, request) }
+        .to raise_error(ConnectRpcHttpx::Error) { |e| expect(e.code).to eq(:unknown) }
     end
 
     it "raises deadline_exceeded when the deadline passes in flight" do

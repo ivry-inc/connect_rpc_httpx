@@ -1,0 +1,25 @@
+# Copyright 2026 IVRy Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# Scopes the suite to what connect_rpc_httpx implements: the Connect protocol, unary over POST
+# and GET, without compression. HTTP/2 and TLS come from httpx.
+features:
+  versions:
+    - HTTP_VERSION_1
+    - HTTP_VERSION_2
+  protocols:
+    - PROTOCOL_CONNECT
+  codecs:
+    - CODEC_PROTO
+    - CODEC_JSON
+  compressions:
+    - COMPRESSION_IDENTITY
+  streamTypes:
+    - STREAM_TYPE_UNARY
+  supportsH2c: true
+  supportsTls: true
+  supportsTlsClientCerts: true
+  supportsTrailers: false
+  supportsHalfDuplexBidiOverHttp1: false
+  supportsConnectGet: true
+  supportsMessageReceiveLimit: false
