@@ -42,6 +42,8 @@ module ConnectRpcHttpx
     # Whether RPCs declared free of side effects are sent with Connect GET.
     attr_reader :http_get #: bool
 
+    # @rbs @stream_http: HTTPX::Session
+
     # Builds a client for the server at +base_url+.
     #
     # +codec+ is :proto or :json. +http+ is the httpx session to send through, and defaults to
@@ -54,6 +56,7 @@ module ConnectRpcHttpx
       @base_url = base_url.delete_suffix("/").freeze
       @codec = Codec.fetch(codec)
       @http = http || HTTPX.plugin(:persistent)
+      @stream_http = @http.plugin(:stream)
       @headers = normalize_headers(headers)
       @timeout = timeout
       @http_get = http_get
@@ -69,12 +72,11 @@ module ConnectRpcHttpx
     #
     #: [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
     def call_unary(method, request, headers: {}, timeout: self.timeout)
-      raise Error.new(:deadline_exceeded, "deadline exceeded before sending") if timeout && timeout <= 0
+      check_stream_type(method, :unary)
+      check_deadline(timeout)
 
       body = codec.encode(method.input, request)
-      request_headers = self.headers.merge(normalize_headers(headers))
-      request_headers["user-agent"] ||= [USER_AGENT]
-      request_headers["connect-timeout-ms"] = [timeout_ms(timeout).to_s] if timeout
+      request_headers = request_headers(headers, timeout)
 
       response = if http_get && method.no_side_effects?
         get(method, body, request_headers, timeout)
@@ -82,6 +84,93 @@ module ConnectRpcHttpx
         post(method, body, request_headers, timeout)
       end
       read_unary_response(method, response, timeout)
+    end
+
+    # Issues a server-streaming RPC. With a block, yields each response message as it arrives;
+    # without one, returns the stream unread, to be iterated later. Either way the stream is
+    # returned, for its headers and trailers.
+    #
+    # Raises ConnectRpcHttpx::Error when the RPC fails, during iteration.
+    #
+    #: [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
+    def call_server_stream(method, request, headers: {}, timeout: self.timeout, &block)
+      check_stream_type(method, :server_stream)
+      stream_response(method, [request], headers, timeout, &block)
+    end
+
+    # Issues a client-streaming RPC, sending each message +requests+ enumerates, and returns the
+    # single response message with the response metadata. +requests+ may be any Enumerable,
+    # including a lazy Enumerator; its messages are sent as they are produced.
+    #
+    # Raises ConnectRpcHttpx::Error when the RPC fails.
+    #
+    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
+    def call_client_stream(method, requests, headers: {}, timeout: self.timeout)
+      check_stream_type(method, :client_stream)
+      check_deadline(timeout)
+
+      stream = ResponseStream.new(stream_call(method, requests, headers, timeout))
+      messages = stream.to_a
+      response_headers = stream.headers || {}
+      trailers = stream.trailers || {}
+      unless messages.size == 1
+        raise Error.new(:unimplemented, "client stream got #{messages.size} response messages, not 1", headers: response_headers, trailers:)
+      end
+
+      UnaryResponse.new(message: messages.fetch(0), headers: response_headers, trailers:)
+    end
+
+    # Issues a bidirectional-streaming RPC in half-duplex: every message +requests+ enumerates is
+    # sent, then the responses are read as #call_server_stream reads them.
+    #
+    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
+    def call_bidi_stream(method, requests, headers: {}, timeout: self.timeout, &block)
+      check_stream_type(method, :bidi_stream)
+      stream_response(method, requests, headers, timeout, &block)
+    end
+
+    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, Hash[String, String | Array[String]] headers, seconds? timeout) ?{ (O message) -> void } -> ResponseStream[O]
+    private def stream_response(method, requests, headers, timeout, &block)
+      check_deadline(timeout)
+      stream = ResponseStream.new(stream_call(method, requests, headers, timeout))
+      block ? stream.each(&block) : stream
+    end
+
+    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, Hash[String, String | Array[String]] headers, seconds? timeout) -> StreamCall[I, O]
+    private def stream_call(method, requests, headers, timeout)
+      request_headers = request_headers(headers, timeout)
+      request_headers["connect-protocol-version"] = ["1"]
+      request_headers["content-type"] = ["application/connect+#{codec.name}"]
+      StreamCall.new(
+        http: @stream_http,
+        url: "#{base_url}#{method.path}",
+        headers: request_headers,
+        codec:,
+        method:,
+        requests:,
+        timeout:,
+      )
+    end
+
+    #: (MethodDescriptor[untyped, untyped] method, Symbol stream_type) -> void
+    private def check_stream_type(method, stream_type)
+      return if method.stream_type == stream_type
+
+      raise ArgumentError, "#{method.path} is a #{method.stream_type} RPC, not #{stream_type}"
+    end
+
+    #: (seconds? timeout) -> void
+    private def check_deadline(timeout)
+      raise Error.new(:deadline_exceeded, "deadline exceeded before sending") if timeout && timeout <= 0
+    end
+
+    # The client's headers with the call's merged over them, plus the headers every RPC sends.
+    #: (Hash[String, String | Array[String]] headers, seconds? timeout) -> Hash[String, Array[String]]
+    private def request_headers(headers, timeout)
+      request_headers = self.headers.merge(normalize_headers(headers))
+      request_headers["user-agent"] ||= [USER_AGENT]
+      request_headers["connect-timeout-ms"] = [timeout_ms(timeout).to_s] if timeout
+      request_headers
     end
 
     #: [I, O] (MethodDescriptor[I, O] method, String body, Hash[String, Array[String]] headers, seconds? timeout) -> HTTPX::response
@@ -113,7 +202,7 @@ module ConnectRpcHttpx
     private def read_unary_response(method, response, timeout)
       if response.is_a?(HTTPX::ErrorResponse)
         error = response.error
-        raise Error.new(transport_error_code(error, timeout), "request to #{method.path} failed"), cause: error
+        raise Error.new(Error.transport_code(error, timeout:), "request to #{method.path} failed"), cause: error
       end
 
       headers, trailers = split_metadata(response.headers)
@@ -131,17 +220,6 @@ module ConnectRpcHttpx
         raise Error.new(:internal, "unmarshal response into #{method.name} output failed", headers:, trailers:)
       end
       UnaryResponse.new(message:, headers:, trailers:)
-    end
-
-    # A response that is not valid HTTP came from the server, so it is :unknown rather than a
-    # failure to reach the server.
-    #: (StandardError error, seconds? timeout) -> Symbol
-    private def transport_error_code(error, timeout)
-      case error
-      when HTTPX::TimeoutError then timeout ? :deadline_exceeded : :unavailable
-      when HTTPX::Parser::Error then :unknown
-      else :unavailable
-      end
     end
 
     #: (String? encoding, Hash[String, Array[String]] headers, Hash[String, Array[String]] trailers) -> void
@@ -165,17 +243,8 @@ module ConnectRpcHttpx
     # Connect unary responses carry trailers as headers with a "trailer-" prefix.
     #: (HTTPX::Headers response_headers) -> [Hash[String, Array[String]], Hash[String, Array[String]]]
     private def split_metadata(response_headers)
-      headers = {} #: Hash[String, Array[String]]
-      trailers = {} #: Hash[String, Array[String]]
-      response_headers.each do |name, _joined|
-        values = response_headers.get(name).map(&:to_s)
-        if name.start_with?("trailer-")
-          (trailers[name.delete_prefix("trailer-")] ||= []).concat(values)
-        else
-          (headers[name] ||= []).concat(values)
-        end
-      end
-      [headers, trailers]
+      trailers, headers = Metadata.from_httpx(response_headers).partition { |name, _| name.start_with?("trailer-") }
+      [headers.to_h, trailers.to_h { |name, values| [name.delete_prefix("trailer-"), values] }]
     end
 
     #: (seconds timeout) -> Integer

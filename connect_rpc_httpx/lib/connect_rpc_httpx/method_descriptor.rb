@@ -23,6 +23,9 @@ module ConnectRpcHttpx
     # The idempotency_level method option values, as symbols.
     IDEMPOTENCY_LEVELS = [:idempotency_unknown, :no_side_effects, :idempotent].freeze #: Array[Symbol]
 
+    # Whether the request side, the response side, both or neither is a stream.
+    STREAM_TYPES = [:unary, :client_stream, :server_stream, :bidi_stream].freeze #: Array[Symbol]
+
     # The fully-qualified service name, such as "acme.greet.v1.GreetService".
     attr_reader :service #: String
 
@@ -32,16 +35,19 @@ module ConnectRpcHttpx
     attr_reader :input #: _MessageClass[I]
     attr_reader :output #: _MessageClass[O]
     attr_reader :idempotency #: Symbol
+    attr_reader :stream_type #: Symbol
 
-    #: (service: String, name: String, input: _MessageClass[I], output: _MessageClass[O], ?idempotency: Symbol) -> void
-    def initialize(service:, name:, input:, output:, idempotency: :idempotency_unknown)
+    #: (service: String, name: String, input: _MessageClass[I], output: _MessageClass[O], ?idempotency: Symbol, ?stream_type: Symbol) -> void
+    def initialize(service:, name:, input:, output:, idempotency: :idempotency_unknown, stream_type: :unary)
       raise ArgumentError, "unknown idempotency level: #{idempotency.inspect}" unless IDEMPOTENCY_LEVELS.include?(idempotency)
+      raise ArgumentError, "unknown stream type: #{stream_type.inspect}" unless STREAM_TYPES.include?(stream_type)
 
       @service = service
       @name = name
       @input = input
       @output = output
       @idempotency = idempotency
+      @stream_type = stream_type
       freeze
     end
 

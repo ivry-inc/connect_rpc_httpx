@@ -13,11 +13,9 @@ Tooling is shared at the root: one bundle (development dependencies live in the 
 
 For `foo/bar.proto`, the plugin writes `foo/bar_connect.rb` and `foo/bar_connect.rbs` next to protoc's `foo/bar_pb.rb`. Each service becomes `<Service>Client < ConnectRpcHttpx::Client` in the module protoc's Ruby generator puts the messages in, so the plugin reproduces that generator's naming (`Naming`, `TypeNames`), `ruby_package` included.
 
-A client class holds one `ConnectRpcHttpx::MethodDescriptor` constant per unary RPC and a snake_case method calling it. The descriptors carry everything the runtime needs (path, message classes, idempotency level), so the generated methods are one-liners and all protocol logic lives in the runtime. Generated methods return the response message; `Client#call_unary` with a descriptor returns the message with response headers and trailers.
+A client class holds one `ConnectRpcHttpx::MethodDescriptor` constant per RPC and a snake_case method calling it. The descriptors carry everything the runtime needs (path, message classes, idempotency level, stream type), so the generated methods are one-liners calling `call_unary`, `call_client_stream`, `call_server_stream` or `call_bidi_stream`, and all protocol logic lives in the runtime. Unary and client-streaming methods return the response message; `call_unary` and `call_client_stream` with a descriptor return it with the response headers and trailers.
 
 Naming conflicts are resolved at generation time: an RPC whose Ruby name matches a client or `Object` method gets a trailing underscore, and two RPCs that map to the same Ruby name fail generation.
-
-Streaming RPCs are skipped with a comment until the runtime implements them.
 
 ## Runtime
 
@@ -45,6 +43,17 @@ Every failure surfaces as `ConnectRpcHttpx::Error`:
 | Any other transport failure | `unavailable` |
 
 Transport failures keep the httpx error as `cause`. Response headers and trailers are kept on the error whenever a response arrived.
+
+### Streaming
+
+Streams use the Connect streaming protocol: enveloped messages (`Envelope`), and an end-of-stream message carrying the trailers and any error. `StreamCall` runs one streaming RPC through a session derived from the client's with httpx's `stream` plugin, built once in `Client#initialize` so the client stays frozen.
+
+- A `ResponseStream` sends its RPC when first iterated and can be iterated once. Client-streaming calls read one through and require exactly one message.
+- The caller's block and request Enumerable run inside httpx's event loop. An exception from them propagates as it is. The http-2 gem wraps exceptions raised in its callbacks, so the original is recovered through `cause`.
+- Leaving an iteration early, by `break` or exception, leaves the response half read on its connection. The request is failed through `Request#handle_error`, which closes the connection rather than letting the next request read the rest.
+- httpx closes a connection idle longer than its operation timeout, 60 seconds for the stream plugin. A stream may stay quiet longer, so `StreamCall` sets it to a year (httpx rejects infinity), leaving the deadline to `total_request_timeout`.
+- httpx 1.9 ends a chunked HTTP/1.1 request body without its final CRLF unless the request has trailers, and a server then waits for the rest of the body. `StreamCall` gives each request empty trailers to work around it.
+- Bidirectional streams are half-duplex. Full duplex needs httpx's `stream_bidi` plugin and HTTP/2, and an API to send and receive independently.
 
 ### Conformance
 

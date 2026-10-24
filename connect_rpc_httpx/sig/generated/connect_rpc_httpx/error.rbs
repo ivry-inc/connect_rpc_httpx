@@ -23,6 +23,16 @@ module ConnectRpcHttpx
     # : (status: Integer, content_type: String?, body: String, headers: Hash[String, Array[String]], trailers: Hash[String, Array[String]]) -> Error
     def self.from_unary_response: (status: Integer, content_type: String?, body: String, headers: Hash[String, Array[String]], trailers: Hash[String, Array[String]]) -> Error
 
+    # Builds an error from its Connect JSON form, as a unary error body or the "error" member of a
+    # stream's end message carries it. +fallback_code+ stands in for a missing or unknown code.
+    # : (Hash[String, untyped] wire, fallback_code: Symbol, headers: Hash[String, Array[String]], trailers: Hash[String, Array[String]]) -> Error
+    def self.from_wire: (Hash[String, untyped] wire, fallback_code: Symbol, headers: Hash[String, Array[String]], trailers: Hash[String, Array[String]]) -> Error
+
+    # The code for an RPC that failed in transport. A response that is not valid HTTP came from the
+    # server, so it is :unknown rather than a failure to reach the server.
+    # : (StandardError error, timeout: seconds?) -> Symbol
+    def self.transport_code: (StandardError error, timeout: seconds?) -> Symbol
+
     # : (String body) -> Hash[String, untyped]?
     def self.parse_wire_error: (String body) -> Hash[String, untyped]?
 

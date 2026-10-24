@@ -6,6 +6,7 @@
 
 require "base64"
 require "json"
+require "httpx"
 require "google/protobuf/well_known_types"
 
 module ConnectRpcHttpx
@@ -40,10 +41,28 @@ module ConnectRpcHttpx
       wire = parse_wire_error(body) if Codec::Json.content_type?(content_type)
       return new(Code.from_http_status(status), "HTTP status #{status}", headers:, trailers:) unless wire
 
+      from_wire(wire, fallback_code: Code.from_http_status(status), headers:, trailers:)
+    end
+
+    # Builds an error from its Connect JSON form, as a unary error body or the "error" member of a
+    # stream's end message carries it. +fallback_code+ stands in for a missing or unknown code.
+    #: (Hash[String, untyped] wire, fallback_code: Symbol, headers: Hash[String, Array[String]], trailers: Hash[String, Array[String]]) -> Error
+    def self.from_wire(wire, fallback_code:, headers:, trailers:)
       code = wire["code"].is_a?(String) ? wire["code"].to_sym : nil
-      code = Code.from_http_status(status) unless code && Code.valid?(code)
+      code = fallback_code unless code && Code.valid?(code)
       message = wire["message"].is_a?(String) ? wire["message"] : ""
       new(code, message, details: parse_details(wire["details"]), headers:, trailers:)
+    end
+
+    # The code for an RPC that failed in transport. A response that is not valid HTTP came from the
+    # server, so it is :unknown rather than a failure to reach the server.
+    #: (StandardError error, timeout: seconds?) -> Symbol
+    def self.transport_code(error, timeout:)
+      case error
+      when HTTPX::TimeoutError then timeout ? :deadline_exceeded : :unavailable
+      when HTTPX::Parser::Error then :unknown
+      else :unavailable
+      end
     end
 
     #: (String body) -> Hash[String, untyped]?

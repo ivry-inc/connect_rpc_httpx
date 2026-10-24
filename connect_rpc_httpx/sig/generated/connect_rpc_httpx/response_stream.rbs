@@ -1,0 +1,42 @@
+# Generated from lib/connect_rpc_httpx/response_stream.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # The responses of a server-streaming or bidirectional RPC, read as they arrive.
+  #
+  # The RPC is sent when the stream is first iterated, and a stream can be iterated only once.
+  # Leaving the iteration early, with +break+ or an exception, cancels the RPC.
+  #
+  #   stream = client.watch(request)
+  #   stream.each { |event| ... }
+  #   stream.trailers
+  #
+  # @rbs generic O -- the response message
+  class ResponseStream[O]
+    include Enumerable[O]
+
+    # Performs the RPC, reporting the headers and each message, and returns the trailers.
+    interface _Runner[O]
+      def run: (^(metadata) -> void on_headers, ^(O) -> void on_message) -> metadata
+    end
+
+    @runner: _Runner[O]
+
+    @started: bool
+
+    # Response headers, once the response has started to arrive.
+    attr_reader headers: metadata?
+
+    # Response trailers, once the stream has ended, including with an error.
+    attr_reader trailers: metadata?
+
+    # : (_Runner[O] runner) -> void
+    def initialize: (_Runner[O] runner) -> void
+
+    # Yields each response message. Raises ConnectRpcHttpx::Error when the RPC fails, after any
+    # messages that arrived before the failure.
+    # : () { (O message) -> void } -> self
+    # : () -> Enumerator[O, self]
+    def each: () { (O message) -> void } -> self
+            | () -> Enumerator[O, self]
+  end
+end

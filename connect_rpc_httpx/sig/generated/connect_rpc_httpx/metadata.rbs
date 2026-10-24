@@ -1,0 +1,9 @@
+# Generated from lib/connect_rpc_httpx/metadata.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # Response metadata as this library hands it out: lowercase names, each with every value sent.
+  module Metadata
+    # : (HTTPX::Headers headers) -> Hash[String, Array[String]]
+    def self.from_httpx: (HTTPX::Headers headers) -> Hash[String, Array[String]]
+  end
+end

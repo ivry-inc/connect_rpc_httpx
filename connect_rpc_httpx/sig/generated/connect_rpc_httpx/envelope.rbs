@@ -1,0 +1,33 @@
+# Generated from lib/connect_rpc_httpx/envelope.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # Connect streaming frames each message in an envelope: one flags byte and a big-endian 32-bit
+  # length, followed by the data. See https://connectrpc.com/docs/protocol/#streaming-request.
+  module Envelope
+    PREFIX_SIZE: Integer
+
+    COMPRESSED: Integer
+
+    # Marks the final envelope of a response stream, whose data is a JSON end-of-stream message.
+    END_STREAM: Integer
+
+    # : (String data, ?Integer flags) -> String
+    def self.encode: (String data, ?Integer flags) -> String
+
+    # Reassembles envelopes from response body chunks, which split them at arbitrary points.
+    class Reader
+      @buffer: String
+
+      # : () -> void
+      def initialize: () -> void
+
+      # Appends +chunk+ and yields the flags and data of each envelope it completes.
+      # : (String chunk) { (Integer flags, String data) -> void } -> void
+      def push: (String chunk) { (Integer flags, String data) -> void } -> void
+
+      # Whether part of an envelope is still waiting for more bytes.
+      # : () -> bool
+      def partial?: () -> bool
+    end
+  end
+end

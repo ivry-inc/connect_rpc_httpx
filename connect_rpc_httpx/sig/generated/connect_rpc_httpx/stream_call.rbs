@@ -1,0 +1,93 @@
+# Generated from lib/connect_rpc_httpx/stream_call.rb with RBS::Inline
+
+module ConnectRpcHttpx
+  # One streaming RPC over the Connect streaming protocol: enveloped request messages out, then
+  # enveloped response messages and an end-of-stream message back. Client builds these; it is not
+  # meant to be used directly.
+  #
+  # @rbs generic I -- the request message
+  # @rbs generic O -- the response message
+  class StreamCall[I, O]
+    # httpx closes a connection idle longer than its operation timeout, and rejects infinity.
+    # A stream may legitimately stay silent for long, so a year stands in for no limit.
+    IDLE_TIMEOUT: Integer
+
+    @caller_error: StandardError?
+
+    @end_message: String?
+
+    @error_body: String?
+
+    @response_headers: metadata?
+
+    @reader: Envelope::Reader
+
+    @timeout: seconds?
+
+    @requests: Enumerable[I]
+
+    @output: _MessageClass[O]
+
+    @input: _MessageClass[I]
+
+    @codec: Codec::_Codec
+
+    @headers: metadata
+
+    @url: String
+
+    @http: HTTPX::Session
+
+    # : (http: HTTPX::Session, url: String, headers: metadata, codec: Codec::_Codec, method: MethodDescriptor[I, O], requests: Enumerable[I], timeout: seconds?) -> void
+    def initialize: (http: HTTPX::Session, url: String, headers: metadata, codec: Codec::_Codec, method: MethodDescriptor[I, O], requests: Enumerable[I], timeout: seconds?) -> void
+
+    # Sends the request messages, reports the response headers and each response message, and
+    # returns the trailers. Raises Error when the RPC fails.
+    #
+    # Exceptions from the caller's code (the request Enumerable, +on_headers+, +on_message+)
+    # propagate as they are, and leaving early cancels the RPC.
+    #
+    # : (^(metadata) -> void on_headers, ^(O) -> void on_message) -> metadata
+    def run: (^(metadata) -> void on_headers, ^(O) -> void on_message) -> metadata
+
+    # : () -> HTTPX::Request
+    private def build_request: () -> HTTPX::Request
+
+    # : () -> Hash[Symbol, untyped]
+    private def timeout: () -> Hash[Symbol, untyped]
+
+    # : () -> Enumerator[String, void]
+    private def request_body: () -> Enumerator[String, void]
+
+    # : (untyped response, String chunk, ^(metadata) -> void on_headers, ^(O) -> void on_message) -> void
+    private def receive: (untyped response, String chunk, ^(metadata) -> void on_headers, ^(O) -> void on_message) -> void
+
+    # Checks the response once its status and headers have arrived, before any body is read.
+    # : (untyped response, ^(metadata) -> void on_headers) -> void
+    private def start: (untyped response, ^(metadata) -> void on_headers) -> void
+
+    # : (untyped response, ^(metadata) -> void on_headers) -> metadata
+    private def finish: (untyped response, ^(metadata) -> void on_headers) -> metadata
+
+    # : (String data) -> Hash[String, untyped]
+    private def parse_end_message: (String data) -> Hash[String, untyped]
+
+    # : (untyped metadata) -> metadata
+    private def parse_trailers: (untyped metadata) -> metadata
+
+    # : (String data) -> O
+    private def decode: (String data) -> O
+
+    # : (String message) -> Error
+    private def protocol_error: (String message) -> Error
+
+    # Re-raises an exception this class or the caller's code raised. The http-2 gem wraps an
+    # exception raised in its callbacks, keeping the original as the cause.
+    # : (StandardError error) -> void
+    private def raise_original: (StandardError error) -> void
+
+    # Runs the caller's code, remembering an exception from it so #run propagates it untouched.
+    # : [T] () { () -> T } -> T
+    private def callback: [T] () { () -> T } -> T
+  end
+end

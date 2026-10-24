@@ -2,7 +2,7 @@
 
 connect_rpc_httpx is the runtime for the [Connect](https://connectrpc.com/) clients that [protoc-gen-connect-ruby](../protoc_gen_connect_ruby/) generates. It speaks the Connect protocol over a persistent [httpx](https://gitlab.com/os85/httpx) session, and a client can be shared freely between threads.
 
-It implements unary RPCs over HTTP POST and Connect GET, with the proto and JSON codecs, over whatever HTTP version and TLS setup the httpx session negotiates. Its behaviour is checked against the official [Connect conformance suite](../conformance/) over HTTP/1.1, HTTP/2 and TLS.
+It implements unary RPCs over HTTP POST and Connect GET, and client, server and half-duplex bidirectional streams, with the proto and JSON codecs, over whatever HTTP version and TLS setup the httpx session negotiates. Its behaviour is checked against the official [Connect conformance suite](../conformance/) over HTTP/1.1, HTTP/2 and TLS.
 
 ## Installation
 
@@ -70,6 +70,35 @@ Other plugins and options chain the same way, such as `.plugin(:retries, max_ret
 
 A fixed header needs no plugin: pass it as `headers:` to `new`, or to a single call.
 
+### Streaming RPCs
+
+A server-streaming method yields each response message as it arrives, and returns the stream for its metadata:
+
+```ruby
+stream = client.greet_stream(request) do |response|
+  puts response.greeting
+end
+stream.headers
+stream.trailers
+```
+
+Without a block it returns the stream unread, an Enumerable that sends the RPC when first iterated and can be iterated once:
+
+```ruby
+stream = client.greet_stream(request)
+stream.first(3)   # leaving the iteration early cancels the RPC
+```
+
+A client-streaming method takes any Enumerable of requests, such as an Array or a lazy Enumerator, sends each message as it is produced, and returns the single response:
+
+```ruby
+client.greet_many(names.lazy.map { |name| Acme::Greet::V1::GreetRequest.new(name:) })
+```
+
+A bidirectional method takes an Enumerable as well and yields responses as a server stream does. It is half-duplex: every request is sent before responses are read, which works over HTTP/1.1 and HTTP/2 alike.
+
+A failure raises `ConnectRpcHttpx::Error` during the iteration, after the messages that arrived before it. An exception from your block or from the request Enumerable propagates as it is, and cancels the RPC.
+
 ### Response metadata
 
 Generated methods return the response message. For response headers and trailers, call the method descriptor through `call_unary`:
@@ -99,7 +128,8 @@ end
 
 ## Caveats
 
-- Streaming RPCs, the gRPC and gRPC-Web protocols, and request compression are not implemented.
+- Full-duplex bidirectional streaming, the gRPC and gRPC-Web protocols, and request compression are not implemented.
+- A call cannot be cancelled from another thread. A stream is cancelled by leaving its iteration.
 - Responses compressed with gzip or deflate are decoded by httpx; other encodings fail with `internal`.
 
 ## License

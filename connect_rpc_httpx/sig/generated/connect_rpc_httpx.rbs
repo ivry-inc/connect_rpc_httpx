@@ -4,4 +4,7 @@
 module ConnectRpcHttpx
   # A duration in seconds, as RPC deadlines are given.
   type seconds = Integer | Float
+
+  # Request or response metadata: lowercase names, each with all of its values.
+  type metadata = Hash[String, Array[String]]
 end
