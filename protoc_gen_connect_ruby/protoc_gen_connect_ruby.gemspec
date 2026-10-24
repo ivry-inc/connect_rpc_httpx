@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.summary = "protoc plugin generating Connect RPC clients for Ruby."
   spec.description = "A protoc / buf plugin that generates Connect RPC client classes and their " \
     "RBS signatures, running on the connect_rpc_httpx runtime."
-  spec.homepage = "https://github.com/ivry-inc/protoc_gen_connect_ruby"
+  spec.homepage = "https://github.com/ivry-inc/connect_rpc_httpx"
   spec.license = "Apache-2.0"
   spec.required_ruby_version = ">= 3.4"
 

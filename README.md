@@ -1,6 +1,6 @@
-# protoc-gen-connect-ruby: Typed Connect RPC clients for Ruby
+# connect_rpc_httpx: Typed Connect RPC clients for Ruby, on httpx
 
-protoc-gen-connect-ruby generates [Connect](https://connectrpc.com/) RPC clients for Ruby from your `.proto` files. Each service becomes a plain Ruby class with one method per RPC, along with an RBS signature so Steep can check the calls. The generated clients run on connect_rpc_httpx, which speaks the Connect protocol over [httpx](https://gitlab.com/os85/httpx).
+connect_rpc_httpx is a [Connect](https://connectrpc.com/) RPC client for Ruby that speaks the Connect protocol over [httpx](https://gitlab.com/os85/httpx). Its companion protoc plugin, protoc-gen-connect-ruby, generates the clients from your `.proto` files: each service becomes a plain Ruby class with one method per RPC, along with an RBS signature so Steep can check the calls.
 
 Unary RPCs are supported today, and checked against the official [Connect conformance suite](conformance/). Streaming is not implemented yet.
 
