@@ -5,6 +5,8 @@ ruby = "4.0.6"
 # The conformance runner. Its version also names the BSR module that rake conformance generates
 # from, so the two always match.
 "github:connectrpc/conformance" = "1.0.6"
+# The plugin specs build descriptor sets with protoc and load its --ruby_out output.
+"aqua:protocolbuffers/protobuf/protoc" = "36.2"
 "aqua:jdx/hk" = "2.8.1"
 "aqua:apple/pkl" = "0.32.2"
 "aqua:rhysd/actionlint" = "1.7.12"

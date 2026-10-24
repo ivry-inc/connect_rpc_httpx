@@ -1,4 +1,12 @@
 # Generated from lib/protoc_gen_connect_ruby.rb with RBS::Inline
 
+# A protoc plugin generating Connect RPC clients for the connect_rpc_httpx runtime.
 module ProtocGenConnectRuby
+  # A request the generator cannot serve, reported back to protoc.
+  class Error < StandardError
+  end
+
+  # Runs the plugin protocol: a CodeGeneratorRequest on +input+, the response on +output+.
+  # : (IO input, IO output) -> void
+  def self.run: (IO input, IO output) -> void
 end

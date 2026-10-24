@@ -124,6 +124,11 @@ checksum = "sha256:411cbe34d53764162dd36d69fe5bf7ec39ccd2a8166890c92c35312843554
 url = "https://github.com/jdx/hk/releases/download/v2.8.1/hk-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/jdx/hk/releases/assets/668781792"
 
+[[tools."aqua:protocolbuffers/protobuf/protoc"]]
+version = "36.2"
+backend = "aqua:protocolbuffers/protobuf/protoc"
+specifiers = ["36.2"]
+
 [[tools."aqua:rhysd/actionlint"]]
 version = "1.7.12"
 backend = "aqua:rhysd/actionlint"

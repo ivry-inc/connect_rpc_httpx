@@ -1,0 +1,91 @@
+# Generated from lib/protoc_gen_connect_ruby/file_generator.rb with RBS::Inline
+
+module ProtocGenConnectRuby
+  # Renders the client classes of one .proto file, as Ruby and as RBS.
+  class FileGenerator
+    # The runtime's public client API, which a generated method must not override.
+    CLIENT_METHODS: Array[Symbol]
+
+    # Constants every generated client defines besides its method descriptors.
+    CLIENT_CONSTANTS: Array[String]
+
+    # SourceCodeInfo path components (descriptor.proto field numbers).
+    SERVICE_FIELD: Integer
+
+    METHOD_FIELD: Integer
+
+    RBS_HEADERS: String
+
+    RBS_TIMEOUT: String
+
+    attr_reader file: Google::Protobuf::FileDescriptorProto
+
+    @comments: Hash[Array[Integer], String]
+
+    @type_names: TypeNames
+
+    # : (Google::Protobuf::FileDescriptorProto file, TypeNames type_names) -> void
+    def initialize: (Google::Protobuf::FileDescriptorProto file, TypeNames type_names) -> void
+
+    # Whether the file declares any service, and so has anything to generate.
+    # : () -> bool
+    def services?: () -> bool
+
+    # : () -> String
+    def ruby_source: () -> String
+
+    # : () -> String
+    def rbs_source: () -> String
+
+    # : (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
+    private def ruby_client: (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
+
+    # : (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
+    private def rbs_client: (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
+
+    # Unary methods paired with their index in the service, which SourceCodeInfo paths use.
+    # : (Google::Protobuf::ServiceDescriptorProto service, Integer service_index) -> Array[[Google::Protobuf::MethodDescriptorProto, Integer]]
+    private def unary_methods: (Google::Protobuf::ServiceDescriptorProto service, Integer service_index) -> Array[[ Google::Protobuf::MethodDescriptorProto, Integer ]]
+
+    # : (Google::Protobuf::ServiceDescriptorProto service) -> Array[Google::Protobuf::MethodDescriptorProto]
+    private def streaming_methods: (Google::Protobuf::ServiceDescriptorProto service) -> Array[Google::Protobuf::MethodDescriptorProto]
+
+    # Read by name, because a "method" accessor would shadow Object#method.
+    # : (Google::Protobuf::ServiceDescriptorProto service) -> Array[Google::Protobuf::MethodDescriptorProto]
+    private def service_methods: (Google::Protobuf::ServiceDescriptorProto service) -> Array[Google::Protobuf::MethodDescriptorProto]
+
+    # : (Google::Protobuf::MethodDescriptorProto method) -> bool
+    private def streaming?: (Google::Protobuf::MethodDescriptorProto method) -> bool
+
+    # : (Google::Protobuf::ServiceDescriptorProto service, Array[Google::Protobuf::MethodDescriptorProto] methods) -> void
+    private def check_collisions: (Google::Protobuf::ServiceDescriptorProto service, Array[Google::Protobuf::MethodDescriptorProto] methods) -> void
+
+    # A suffix keeps an RPC from overriding a method the client relies on.
+    # : (Google::Protobuf::MethodDescriptorProto method) -> String
+    private def ruby_method: (Google::Protobuf::MethodDescriptorProto method) -> String
+
+    # : (Google::Protobuf::MethodDescriptorProto method) -> String
+    private def method_constant: (Google::Protobuf::MethodDescriptorProto method) -> String
+
+    # : (Google::Protobuf::ServiceDescriptorProto service) -> String
+    private def client_class: (Google::Protobuf::ServiceDescriptorProto service) -> String
+
+    # : (Google::Protobuf::ServiceDescriptorProto service) -> String
+    private def full_name: (Google::Protobuf::ServiceDescriptorProto service) -> String
+
+    # : (Google::Protobuf::MethodDescriptorProto method) -> String
+    private def idempotency: (Google::Protobuf::MethodDescriptorProto method) -> String
+
+    # : (Writer out) -> void
+    private def header: (Writer out) -> void
+
+    # : (Writer out) { () -> void } -> void
+    private def modules: (Writer out) { () -> void } -> void
+
+    # : (Writer out, Array[Integer] path) -> void
+    private def comment: (Writer out, Array[Integer] path) -> void
+
+    # : (Google::Protobuf::FileDescriptorProto file) -> Hash[Array[Integer], String]
+    private def leading_comments: (Google::Protobuf::FileDescriptorProto file) -> Hash[Array[Integer], String]
+  end
+end

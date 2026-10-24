@@ -1,7 +1,6 @@
-# The google-protobuf 4.x surface this gem uses. Hand-written because the gem ships no
-# signatures and ruby/gem_rbs_collection's entry stops at 3.22, whose non-generic RepeatedField
-# contradicts the signatures protovalidate ships. Narrow on purpose: every declaration here is
-# reached from lib/.
+# The google-protobuf 4.x surface both gems use. Hand-written because the gem ships no
+# signatures and ruby/gem_rbs_collection's entry stops at 3.22. Narrow on purpose: every
+# declaration here is reached from lib/.
 module Google
   module Protobuf
     class Error < StandardError
@@ -10,31 +9,20 @@ module Google
     class ParseError < Error
     end
 
-    class TypeError < ::TypeError
-    end
-
     class RepeatedField[T]
       include Enumerable[T]
 
       def each: () { (T) -> void } -> self
-      def size: () -> Integer
-      def <<: (T) -> self
-      def to_ary: () -> Array[T]
+      def to_a: () -> Array[T]
+      def empty?: () -> bool
     end
 
     module MessageExts
-      def to_h: () -> Hash[Symbol, untyped]
-      def dup: () -> self
-      def ==: (untyped) -> bool
       def []: (String field) -> untyped
-      def []=: (String field, untyped value) -> void
 
       module ClassMethods
-        def descriptor: () -> Descriptor
         def encode: (untyped message, **untyped options) -> String
         def decode: (String bytes, **untyped options) -> untyped
-        def encode_json: (untyped message, **untyped options) -> String
-        def decode_json: (String json, **untyped options) -> untyped
       end
     end
 
@@ -46,96 +34,83 @@ module Google
       def initialize: (?untyped initial_values, **untyped) -> void
     end
 
-    # A message class as a value: what DescriptorPool hands back and what callers pass around.
-    interface _MessageClass
-      def ===: (untyped) -> bool
-      def descriptor: () -> Descriptor
-      def name: () -> String?
-      # Fields come as keywords, or as one Hash of initial values.
-      def new: (?untyped initial_values, **untyped) -> untyped
-      def encode: (untyped message, **untyped options) -> String
-      def decode: (String bytes, **untyped options) -> untyped
-      def encode_json: (untyped message, **untyped options) -> String
-      def decode_json: (String json, **untyped options) -> untyped
-    end
-
-    class DescriptorPool
-      def self.generated_pool: () -> DescriptorPool
-
-      # Returns a Descriptor, EnumDescriptor or FieldDescriptor (for an extension) depending on
-      # what the name refers to, so callers narrow it themselves.
-      def lookup: (String name) -> untyped
-    end
-
-    class Descriptor
-      include Enumerable[FieldDescriptor]
-
-      def each: () { (FieldDescriptor) -> void } -> self
-      def name: () -> String
-      def lookup: (String name) -> FieldDescriptor?
-      def msgclass: () -> _MessageClass
-      def to_proto: () -> untyped
-    end
-
-    class FieldDescriptor
-      def name: () -> String
-      def json_name: () -> String
-      def number: () -> Integer
-      def type: () -> Symbol
-      def subtype: () -> (Descriptor | EnumDescriptor)?
-
-      # Reads this field off a message, which for an extension field is how a custom option is
-      # read off an options message.
-      def get: (untyped message) -> untyped
-    end
-
-class FileDescriptor
-  def name: () -> String
-  def to_proto: () -> untyped
-end
-
-    class EnumDescriptor
-      include Enumerable[[Symbol, Integer]]
-
-      def each: () { ([Symbol, Integer]) -> void } -> self
-      def name: () -> String
-      def enummodule: () -> untyped
-      def to_proto: () -> EnumDescriptorProto
-    end
-
-    class EnumDescriptorProto < AbstractMessage
-      def name: () -> String
-      def value: () -> RepeatedField[EnumValueDescriptorProto]
-    end
-
-    class EnumValueDescriptorProto < AbstractMessage
-      def name: () -> String
-      def number: () -> Integer
-      def options: () -> EnumValueOptions?
-    end
-
-    class EnumValueOptions < AbstractMessage
-    end
-
     class Any < AbstractMessage
-      def self.pack: (untyped message, ?String type_url_prefix) -> Any
       def type_url: () -> String
       def value: () -> String
-      def unpack: (untyped message_class) -> untyped
     end
 
-    class Timestamp < AbstractMessage
-      def self.from_time: (Time time) -> Timestamp
-      def seconds: () -> Integer
-      def nanos: () -> Integer
-      def to_time: () -> Time
-      def to_i: () -> Integer
-      def to_f: () -> Float
+    module Edition
+      EDITION_PROTO2: Integer
+      EDITION_2024: Integer
     end
 
-    class Duration < AbstractMessage
-      def seconds: () -> Integer
-      def nanos: () -> Integer
+    class FileDescriptorProto < AbstractMessage
+      def name: () -> String
+      def package: () -> String
+      def message_type: () -> RepeatedField[DescriptorProto]
+      def service: () -> RepeatedField[ServiceDescriptorProto]
+      def options: () -> FileOptions?
+      def source_code_info: () -> SourceCodeInfo?
+    end
+
+    class FileOptions < AbstractMessage
+      def ruby_package: () -> String
+    end
+
+    class DescriptorProto < AbstractMessage
+      def name: () -> String
+      def nested_type: () -> RepeatedField[DescriptorProto]
+    end
+
+    class ServiceDescriptorProto < AbstractMessage
+      def name: () -> String
+
+      # The "method" field has no usable accessor, since Object#method shadows it.
+      def []: ("method" field) -> RepeatedField[MethodDescriptorProto]
+            | ...
+    end
+
+    class MethodDescriptorProto < AbstractMessage
+      def name: () -> String
+      def input_type: () -> String
+      def output_type: () -> String
+      def client_streaming: () -> bool
+      def server_streaming: () -> bool
+      def options: () -> MethodOptions?
+    end
+
+    class MethodOptions < AbstractMessage
+      # :IDEMPOTENCY_UNKNOWN, :NO_SIDE_EFFECTS or :IDEMPOTENT
+      def idempotency_level: () -> Symbol
+    end
+
+    class SourceCodeInfo < AbstractMessage
+      class Location < AbstractMessage
+        def path: () -> RepeatedField[Integer]
+        def leading_comments: () -> String
+      end
+
+      def location: () -> RepeatedField[Location]
+    end
+
+    module Compiler
+      class CodeGeneratorRequest < AbstractMessage
+        def self.decode: (String bytes, **untyped options) -> CodeGeneratorRequest
+
+        def file_to_generate: () -> RepeatedField[String]
+        def parameter: () -> String
+        def proto_file: () -> RepeatedField[FileDescriptorProto]
+      end
+
+      class CodeGeneratorResponse < AbstractMessage
+        module Feature
+          FEATURE_PROTO3_OPTIONAL: Integer
+          FEATURE_SUPPORTS_EDITIONS: Integer
+        end
+
+        class File < AbstractMessage
+        end
+      end
     end
   end
 end

@@ -1,0 +1,17 @@
+edition = "2023";
+
+package acme.shapes.v1;
+
+import "acme/greet/v1/greet.proto";
+
+option ruby_package = "Acme::Shapes";
+
+service shape_service {
+  rpc Describe(Shape) returns (acme.greet.v1.GreetResponse);
+  rpc ServiceName(Shape) returns (Shape);
+  rpc Class(Shape) returns (Shape);
+}
+
+message Shape {
+  string name = 1;
+}

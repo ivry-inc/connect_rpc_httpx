@@ -1,0 +1,31 @@
+# Generated from lib/protoc_gen_connect_ruby/generator.rb with RBS::Inline
+
+module ProtocGenConnectRuby
+  # Turns a CodeGeneratorRequest into the files to write: a *_connect.rb client and its
+  # *_connect.rbs signature for every requested .proto file that declares a service.
+  class Generator
+    Feature: singleton(Google::Protobuf::Compiler::CodeGeneratorResponse::Feature)
+
+    # Generated code depends on no field-level features, so every edition protoc knows is accepted.
+    SUPPORTED_FEATURES: Integer
+
+    MINIMUM_EDITION: Integer
+
+    MAXIMUM_EDITION: Integer
+
+    attr_reader request: Google::Protobuf::Compiler::CodeGeneratorRequest
+
+    # : (Google::Protobuf::Compiler::CodeGeneratorRequest request) -> void
+    def initialize: (Google::Protobuf::Compiler::CodeGeneratorRequest request) -> void
+
+    # A generation failure is reported in the response's error field, as protoc expects.
+    # : () -> Google::Protobuf::Compiler::CodeGeneratorResponse
+    def run: () -> Google::Protobuf::Compiler::CodeGeneratorResponse
+
+    # : () -> Array[Google::Protobuf::Compiler::CodeGeneratorResponse::File]
+    private def generate_files: () -> Array[Google::Protobuf::Compiler::CodeGeneratorResponse::File]
+
+    # : (String name, String content) -> Google::Protobuf::Compiler::CodeGeneratorResponse::File
+    private def output_file: (String name, String content) -> Google::Protobuf::Compiler::CodeGeneratorResponse::File
+  end
+end

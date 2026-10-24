@@ -1,0 +1,27 @@
+# Generated from lib/protoc_gen_connect_ruby/writer.rb with RBS::Inline
+
+module ProtocGenConnectRuby
+  # Accumulates generated source line by line, indenting two spaces per nesting level.
+  class Writer
+    @lines: Array[String]
+
+    @depth: Integer
+
+    # : () -> void
+    def initialize: () -> void
+
+    # Appends +text+ at the current indentation. Blank lines carry no indentation.
+    # : (?String text) -> void
+    def line: (?String text) -> void
+
+    # : () { () -> void } -> void
+    def indent: () { () -> void } -> void
+
+    # Writes +opening+, the block's lines one level deeper, then "end".
+    # : (String opening) { () -> void } -> void
+    def block: (String opening) { () -> void } -> void
+
+    # : () -> String
+    def to_s: () -> String
+  end
+end
