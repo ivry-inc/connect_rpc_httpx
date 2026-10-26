@@ -26,5 +26,5 @@ Gem::Specification.new do |spec|
   spec.executables = ["protoc-gen-connect-ruby"]
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "google-protobuf", "~> 4.26"
+  spec.add_dependency "google-protobuf", ">= 4.26"
 end

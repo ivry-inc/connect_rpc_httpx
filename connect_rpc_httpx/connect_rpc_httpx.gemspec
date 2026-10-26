@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "base64"
-  spec.add_dependency "google-protobuf", "~> 4.26"
-  spec.add_dependency "httpx", "~> 1.4"
+  spec.add_dependency "google-protobuf", ">= 4.26"
+  # total_request_timeout, which carries RPC deadlines, arrived in httpx 1.8.
+  spec.add_dependency "httpx", ">= 1.8"
 end
