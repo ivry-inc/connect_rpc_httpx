@@ -12,8 +12,8 @@ module ProtocGenConnectRuby
     CLIENT_METHODS = [
       :base_url, :call_bidi_stream, :call_client_stream, :call_server_stream, :call_unary, :check_deadline,
       :check_response_content_type, :check_response_encoding, :check_stream_type, :codec, :get, :headers, :http,
-      :http_get, :normalize_headers, :post, :read_unary_response, :request_headers, :split_metadata, :stream_call,
-      :stream_response, :timeout, :timeout_ms, :timeout_options,
+      :http_get, :normalize_headers, :post, :read_unary_response, :request_from, :request_headers, :split_metadata,
+      :stream_call, :stream_response, :timeout, :timeout_ms, :timeout_options,
     ].freeze #: Array[Symbol]
 
     # Constants every generated client defines besides its method descriptors.

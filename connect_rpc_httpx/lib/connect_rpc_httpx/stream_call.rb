@@ -23,9 +23,9 @@ module ConnectRpcHttpx
     # @rbs @url: String
     # @rbs @headers: metadata
     # @rbs @codec: Codec::_Codec
-    # @rbs @input: _MessageClass[I]
+    # @rbs @method: MethodDescriptor[I, O]
     # @rbs @output: _MessageClass[O]
-    # @rbs @requests: Enumerable[I]
+    # @rbs @requests: Enumerable[I | message_fields]
     # @rbs @timeout: seconds?
     # @rbs @reader: Envelope::Reader
     # @rbs @response_headers: metadata?
@@ -33,13 +33,13 @@ module ConnectRpcHttpx
     # @rbs @end_message: String?
     # @rbs @caller_error: StandardError?
 
-    #: (http: HTTPX::Session, url: String, headers: metadata, codec: Codec::_Codec, method: MethodDescriptor[I, O], requests: Enumerable[I], timeout: seconds?) -> void
+    #: (http: HTTPX::Session, url: String, headers: metadata, codec: Codec::_Codec, method: MethodDescriptor[I, O], requests: Enumerable[I | message_fields], timeout: seconds?) -> void
     def initialize(http:, url:, headers:, codec:, method:, requests:, timeout:)
       @http = http
       @url = url
       @headers = headers
       @codec = codec
-      @input = method.input
+      @method = method
       @output = method.output
       @requests = requests
       @timeout = timeout
@@ -96,7 +96,7 @@ module ConnectRpcHttpx
     #: () -> Enumerator[String, void]
     private def request_body
       Enumerator.new do |body|
-        callback { @requests.each { |message| body << Envelope.encode(@codec.encode(@input, message)) } }
+        callback { @requests.each { |message| body << Envelope.encode(@codec.encode(@method.input, @method.input_message(message))) } }
       end
     end
 

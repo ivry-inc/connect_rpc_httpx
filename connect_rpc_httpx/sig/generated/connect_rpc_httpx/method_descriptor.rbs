@@ -3,6 +3,8 @@
 module ConnectRpcHttpx
   # A generated protobuf message class, seen through the class methods the codecs call.
   interface _MessageClass[M]
+    def new: (message_fields fields) -> M
+
     def encode: (M message) -> String
 
     def decode: (String bytes) -> M
@@ -44,6 +46,10 @@ module ConnectRpcHttpx
     # The URL path the method is served at, relative to the server's base URL.
     # : () -> String
     def path: () -> String
+
+    # +request+ as an input message, built from its fields when it is a Hash.
+    # : (I | message_fields request) -> I
+    def input_message: (I | message_fields request) -> I
 
     # Whether the method may be called with Connect GET.
     # : () -> bool

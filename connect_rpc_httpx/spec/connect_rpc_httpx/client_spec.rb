@@ -51,6 +51,18 @@ RSpec.describe(ConnectRpcHttpx::Client) do
       expect(response.message).to eq(TestMessages::EchoResponse.new(count: 42))
     end
 
+    it "builds the request from a Hash of its fields" do
+      stub = stub_request(:post, url).with(body: TestMessages::EchoRequest.encode(request)).to_return(proto_response(1))
+
+      client.call_unary(method_descriptor, {text: "hello"})
+
+      expect(stub).to have_been_requested
+    end
+
+    it "lets an unknown field in a Hash request through without sending" do
+      expect { client.call_unary(method_descriptor, {nope: 1}) }.to raise_error(ArgumentError, /nope/)
+    end
+
     it "separates trailer- prefixed headers into trailers" do
       stub_request(:post, url).to_return(proto_response(1, headers: {"x-header" => "a", "trailer-x-trailer" => "b"}))
 

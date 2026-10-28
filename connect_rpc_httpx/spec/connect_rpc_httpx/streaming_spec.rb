@@ -150,6 +150,12 @@ RSpec.describe(ConnectRpcHttpx::Client, "streaming") do
       expect(sent_messages(server.requests.pop)).to eq(["a", "b"])
     end
 
+    it "builds each request from a Hash of its fields" do
+      client.call_client_stream(descriptor(:client_stream), [{text: "a"}, TestMessages::EchoRequest.new(text: "b")])
+
+      expect(sent_messages(server.requests.pop)).to eq(["a", "b"])
+    end
+
     it "raises unimplemented when the server answers with no message" do
       allow(self).to receive(:respond).and_return([200, ok_headers, [end_stream]])
 

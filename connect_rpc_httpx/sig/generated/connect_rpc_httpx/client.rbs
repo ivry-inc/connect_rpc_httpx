@@ -46,15 +46,16 @@ module ConnectRpcHttpx
     # : (String base_url, ?codec: Symbol, ?http: HTTPX::Session?, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?, ?http_get: bool) -> void
     def initialize: (String base_url, ?codec: Symbol, ?http: HTTPX::Session?, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?, ?http_get: bool) -> void
 
-    # Issues a unary RPC and returns its response message with the response metadata.
+    # Issues a unary RPC and returns its response message with the response metadata. +request+ is
+    # the input message, or a Hash of its fields.
     #
     # +headers+ are merged over the client's, replacing headers of the same name. +timeout+
     # (seconds) replaces the client's deadline, and nil sends no deadline at all.
     #
     # Raises ConnectRpcHttpx::Error when the RPC fails, including transport failures.
     #
-    # : [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
-    def call_unary: [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
+    # : [I, O] (MethodDescriptor[I, O] method, I | message_fields request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
+    def call_unary: [I, O] (MethodDescriptor[I, O] method, I | message_fields request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
 
     # Issues a server-streaming RPC. With a block, yields each response message as it arrives;
     # without one, returns the stream unread, to be iterated later. Either way the stream is
@@ -62,29 +63,35 @@ module ConnectRpcHttpx
     #
     # Raises ConnectRpcHttpx::Error when the RPC fails, during iteration.
     #
-    # : [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
-    def call_server_stream: [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
+    # : [I, O] (MethodDescriptor[I, O] method, I | message_fields request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
+    def call_server_stream: [I, O] (MethodDescriptor[I, O] method, I | message_fields request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
 
     # Issues a client-streaming RPC, sending each message +requests+ enumerates, and returns the
     # single response message with the response metadata. +requests+ may be any Enumerable,
-    # including a lazy Enumerator; its messages are sent as they are produced.
+    # including a lazy Enumerator, of messages or Hashes of their fields. They are sent as they are
+    # produced.
     #
     # Raises ConnectRpcHttpx::Error when the RPC fails.
     #
-    # : [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
-    def call_client_stream: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
+    # : [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
+    def call_client_stream: [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
 
     # Issues a bidirectional-streaming RPC in half-duplex: every message +requests+ enumerates is
     # sent, then the responses are read as #call_server_stream reads them.
     #
-    # : [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
-    def call_bidi_stream: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
+    # : [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
+    def call_bidi_stream: [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
 
-    # : [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, Hash[String, String | Array[String]] headers, seconds? timeout) ?{ (O message) -> void } -> ResponseStream[O]
-    private def stream_response: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, Hash[String, String | Array[String]] headers, seconds? timeout) ?{ (O message) -> void } -> ResponseStream[O]
+    # The request a generated method was given: its positional argument, or else its keyword
+    # arguments as the fields of the input message.
+    # : [I] (I | message_fields | nil request, message_fields fields) -> (I | message_fields)
+    private def request_from: [I] (I | message_fields | nil request, message_fields fields) -> (I | message_fields)
 
-    # : [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, Hash[String, String | Array[String]] headers, seconds? timeout) -> StreamCall[I, O]
-    private def stream_call: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, Hash[String, String | Array[String]] headers, seconds? timeout) -> StreamCall[I, O]
+    # : [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, Hash[String, String | Array[String]] headers, seconds? timeout) ?{ (O message) -> void } -> ResponseStream[O]
+    private def stream_response: [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, Hash[String, String | Array[String]] headers, seconds? timeout) ?{ (O message) -> void } -> ResponseStream[O]
+
+    # : [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, Hash[String, String | Array[String]] headers, seconds? timeout) -> StreamCall[I, O]
+    private def stream_call: [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, Hash[String, String | Array[String]] headers, seconds? timeout) -> StreamCall[I, O]
 
     # : (MethodDescriptor[untyped, untyped] method, Symbol stream_type) -> void
     private def check_stream_type: (MethodDescriptor[untyped, untyped] method, Symbol stream_type) -> void

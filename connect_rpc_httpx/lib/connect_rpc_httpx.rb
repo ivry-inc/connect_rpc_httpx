@@ -24,4 +24,7 @@ module ConnectRpcHttpx
   #
   #   # Request or response metadata: lowercase names, each with all of its values.
   #   type metadata = Hash[String, Array[String]]
+  #
+  #   # A request message given as its fields, which may nest further Hashes for message fields.
+  #   type message_fields = Hash[Symbol | String, untyped]
 end

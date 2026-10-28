@@ -24,11 +24,11 @@ module ConnectRpcHttpx
 
     @timeout: seconds?
 
-    @requests: Enumerable[I]
+    @requests: Enumerable[I | message_fields]
 
     @output: _MessageClass[O]
 
-    @input: _MessageClass[I]
+    @method: MethodDescriptor[I, O]
 
     @codec: Codec::_Codec
 
@@ -38,8 +38,8 @@ module ConnectRpcHttpx
 
     @http: HTTPX::Session
 
-    # : (http: HTTPX::Session, url: String, headers: metadata, codec: Codec::_Codec, method: MethodDescriptor[I, O], requests: Enumerable[I], timeout: seconds?) -> void
-    def initialize: (http: HTTPX::Session, url: String, headers: metadata, codec: Codec::_Codec, method: MethodDescriptor[I, O], requests: Enumerable[I], timeout: seconds?) -> void
+    # : (http: HTTPX::Session, url: String, headers: metadata, codec: Codec::_Codec, method: MethodDescriptor[I, O], requests: Enumerable[I | message_fields], timeout: seconds?) -> void
+    def initialize: (http: HTTPX::Session, url: String, headers: metadata, codec: Codec::_Codec, method: MethodDescriptor[I, O], requests: Enumerable[I | message_fields], timeout: seconds?) -> void
 
     # Sends the request messages, reports the response headers and each response message, and
     # returns the trailers. Raises Error when the RPC fails.

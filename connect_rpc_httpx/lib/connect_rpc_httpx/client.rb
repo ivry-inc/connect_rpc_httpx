@@ -63,19 +63,20 @@ module ConnectRpcHttpx
       freeze
     end
 
-    # Issues a unary RPC and returns its response message with the response metadata.
+    # Issues a unary RPC and returns its response message with the response metadata. +request+ is
+    # the input message, or a Hash of its fields.
     #
     # +headers+ are merged over the client's, replacing headers of the same name. +timeout+
     # (seconds) replaces the client's deadline, and nil sends no deadline at all.
     #
     # Raises ConnectRpcHttpx::Error when the RPC fails, including transport failures.
     #
-    #: [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
+    #: [I, O] (MethodDescriptor[I, O] method, I | message_fields request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
     def call_unary(method, request, headers: {}, timeout: self.timeout)
       check_stream_type(method, :unary)
       check_deadline(timeout)
 
-      body = codec.encode(method.input, request)
+      body = codec.encode(method.input, method.input_message(request))
       request_headers = request_headers(headers, timeout)
 
       response = if http_get && method.no_side_effects?
@@ -92,7 +93,7 @@ module ConnectRpcHttpx
     #
     # Raises ConnectRpcHttpx::Error when the RPC fails, during iteration.
     #
-    #: [I, O] (MethodDescriptor[I, O] method, I request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
+    #: [I, O] (MethodDescriptor[I, O] method, I | message_fields request, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
     def call_server_stream(method, request, headers: {}, timeout: self.timeout, &block)
       check_stream_type(method, :server_stream)
       stream_response(method, [request], headers, timeout, &block)
@@ -100,11 +101,12 @@ module ConnectRpcHttpx
 
     # Issues a client-streaming RPC, sending each message +requests+ enumerates, and returns the
     # single response message with the response metadata. +requests+ may be any Enumerable,
-    # including a lazy Enumerator; its messages are sent as they are produced.
+    # including a lazy Enumerator, of messages or Hashes of their fields. They are sent as they are
+    # produced.
     #
     # Raises ConnectRpcHttpx::Error when the RPC fails.
     #
-    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
+    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) -> UnaryResponse[O]
     def call_client_stream(method, requests, headers: {}, timeout: self.timeout)
       check_stream_type(method, :client_stream)
       check_deadline(timeout)
@@ -123,20 +125,33 @@ module ConnectRpcHttpx
     # Issues a bidirectional-streaming RPC in half-duplex: every message +requests+ enumerates is
     # sent, then the responses are read as #call_server_stream reads them.
     #
-    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
+    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, ?headers: Hash[String, String | Array[String]], ?timeout: seconds?) ?{ (O message) -> void } -> ResponseStream[O]
     def call_bidi_stream(method, requests, headers: {}, timeout: self.timeout, &block)
       check_stream_type(method, :bidi_stream)
       stream_response(method, requests, headers, timeout, &block)
     end
 
-    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, Hash[String, String | Array[String]] headers, seconds? timeout) ?{ (O message) -> void } -> ResponseStream[O]
+    # The request a generated method was given: its positional argument, or else its keyword
+    # arguments as the fields of the input message.
+    #: [I] (I | message_fields | nil request, message_fields fields) -> (I | message_fields)
+    private def request_from(request, fields)
+      case request
+      when nil then fields
+      else
+        raise ArgumentError, "pass the request as one argument or as keywords, not both" unless fields.empty?
+
+        request
+      end
+    end
+
+    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, Hash[String, String | Array[String]] headers, seconds? timeout) ?{ (O message) -> void } -> ResponseStream[O]
     private def stream_response(method, requests, headers, timeout, &block)
       check_deadline(timeout)
       stream = ResponseStream.new(stream_call(method, requests, headers, timeout))
       block ? stream.each(&block) : stream
     end
 
-    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I] requests, Hash[String, String | Array[String]] headers, seconds? timeout) -> StreamCall[I, O]
+    #: [I, O] (MethodDescriptor[I, O] method, Enumerable[I | message_fields] requests, Hash[String, String | Array[String]] headers, seconds? timeout) -> StreamCall[I, O]
     private def stream_call(method, requests, headers, timeout)
       request_headers = request_headers(headers, timeout)
       request_headers["connect-protocol-version"] = ["1"]
