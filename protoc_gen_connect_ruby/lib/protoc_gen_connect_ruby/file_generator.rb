@@ -7,8 +7,14 @@
 module ProtocGenConnectRuby
   # Renders the client classes of one .proto file, as Ruby and as RBS.
   class FileGenerator
-    # The runtime's public client API, which a generated method must not override.
-    CLIENT_METHODS = [:base_url, :codec, :http, :headers, :timeout, :http_get, :call_unary].freeze #: Array[Symbol]
+    # Every method of ConnectRpcHttpx::Client, public or private, which a generated method must not
+    # override.
+    CLIENT_METHODS = [
+      :base_url, :call_bidi_stream, :call_client_stream, :call_server_stream, :call_unary, :check_deadline,
+      :check_response_content_type, :check_response_encoding, :check_stream_type, :codec, :get, :headers, :http,
+      :http_get, :normalize_headers, :post, :read_unary_response, :request_headers, :split_metadata, :stream_call,
+      :stream_response, :timeout, :timeout_ms, :timeout_options,
+    ].freeze #: Array[Symbol]
 
     # Constants every generated client defines besides its method descriptors.
     CLIENT_CONSTANTS = ["SERVICE_NAME"].freeze #: Array[String]
@@ -186,7 +192,7 @@ module ProtocGenConnectRuby
     #: (Google::Protobuf::MethodDescriptorProto method) -> String
     private def ruby_method(method)
       name = Naming.underscore(method.name)
-      reserved = CLIENT_METHODS.include?(name.to_sym) || Object.public_method_defined?(name)
+      reserved = CLIENT_METHODS.include?(name.to_sym) || Object.method_defined?(name) || Object.private_method_defined?(name)
       reserved ? "#{name}_" : name
     end
 

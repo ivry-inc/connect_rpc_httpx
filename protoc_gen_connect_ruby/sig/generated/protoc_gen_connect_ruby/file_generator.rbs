@@ -3,7 +3,8 @@
 module ProtocGenConnectRuby
   # Renders the client classes of one .proto file, as Ruby and as RBS.
   class FileGenerator
-    # The runtime's public client API, which a generated method must not override.
+    # Every method of ConnectRpcHttpx::Client, public or private, which a generated method must not
+    # override.
     CLIENT_METHODS: Array[Symbol]
 
     # Constants every generated client defines besides its method descriptors.

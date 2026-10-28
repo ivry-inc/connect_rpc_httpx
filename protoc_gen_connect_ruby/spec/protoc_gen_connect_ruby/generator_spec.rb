@@ -55,8 +55,9 @@ RSpec.describe(ProtocGenConnectRuby::Generator) do
     expect(generate("acme/greet/v1/greet.proto", parameter: "bogus").error).to eq("unknown parameter: bogus")
   end
 
-  it "reports two RPCs that map to the same Ruby method" do
-    request = Google::Protobuf::Compiler::CodeGeneratorRequest.new(
+  # A request for a.proto, declaring message M and service S with an RPC per name.
+  def rpcs_request(*names)
+    Google::Protobuf::Compiler::CodeGeneratorRequest.new(
       file_to_generate: ["a.proto"],
       proto_file: [
         Google::Protobuf::FileDescriptorProto.new(
@@ -66,16 +67,21 @@ RSpec.describe(ProtocGenConnectRuby::Generator) do
           service: [
             Google::Protobuf::ServiceDescriptorProto.new(
               name: "S",
-              method: [
-                Google::Protobuf::MethodDescriptorProto.new(name: "GetFoo", input_type: ".a.M", output_type: ".a.M"),
-                Google::Protobuf::MethodDescriptorProto.new(name: "Get_Foo", input_type: ".a.M", output_type: ".a.M"),
-              ],
+              method: names.map { |name| Google::Protobuf::MethodDescriptorProto.new(name:, input_type: ".a.M", output_type: ".a.M") },
             ),
           ],
         ),
       ],
     )
+  end
 
-    expect(described_class.new(request).run.error).to eq("a.S: GetFoo and Get_Foo both map to the Ruby method get_foo")
+  it "reports two RPCs that map to the same Ruby method" do
+    expect(described_class.new(rpcs_request("GetFoo", "Get_Foo")).run.error).to eq("a.S: GetFoo and Get_Foo both map to the Ruby method get_foo")
+  end
+
+  it "suffixes RPCs that would override a private method of the client or of Object" do
+    ruby = described_class.new(rpcs_request("Get", "Initialize", "Raise")).run.file.first.content
+
+    expect(ruby.scan(/^ *def (\w+)/).flatten).to eq(["get_", "initialize_", "raise_"])
   end
 end

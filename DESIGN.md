@@ -15,7 +15,7 @@ For `foo/bar.proto`, the plugin writes `foo/bar_connect.rb` and `foo/bar_connect
 
 A client class holds one `ConnectRpcHttpx::MethodDescriptor` constant per RPC and a snake_case method calling it. The descriptors carry everything the runtime needs (path, message classes, idempotency level, stream type), so the generated methods are one-liners calling `call_unary`, `call_client_stream`, `call_server_stream` or `call_bidi_stream`, and all protocol logic lives in the runtime. Unary and client-streaming methods return the response message; `call_unary` and `call_client_stream` with a descriptor return it with the response headers and trailers.
 
-Naming conflicts are resolved at generation time: an RPC whose Ruby name matches a client or `Object` method gets a trailing underscore, and two RPCs that map to the same Ruby name fail generation.
+Naming conflicts are resolved at generation time: an RPC whose Ruby name matches a method of `ConnectRpcHttpx::Client` or `Object`, private ones included, gets a trailing underscore, and two RPCs that map to the same Ruby name fail generation.
 
 ## Runtime
 

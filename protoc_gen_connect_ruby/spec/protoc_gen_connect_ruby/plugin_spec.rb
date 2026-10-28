@@ -60,6 +60,12 @@ RSpec.describe("protoc-gen-connect-ruby") do
       .to eq([:unary, :server_stream, :client_stream, :bidi_stream])
   end
 
+  it "reserves every method the runtime's client defines" do
+    client_methods = ConnectRpcHttpx::Client.instance_methods(false) + ConnectRpcHttpx::Client.private_instance_methods(false) - [:initialize]
+
+    expect(ProtocGenConnectRuby::FileGenerator::CLIENT_METHODS).to match_array(client_methods)
+  end
+
   it "resolves message types across files and packages" do
     expect(Acme::Shapes::Shape_serviceClient::DESCRIBE.output).to eq(Acme::Greet::V1::GreetResponse)
   end
