@@ -92,7 +92,7 @@ stream.first(3)   # leaving the iteration early cancels the RPC
 A client-streaming method takes any Enumerable of requests, messages or Hashes of their fields, such as an Array or a lazy Enumerator, sends each message as it is produced, and returns the single response:
 
 ```ruby
-client.greet_many(names.lazy.map { |name| {name:} })
+client.greet_many(names.lazy.map { |name| Acme::Greet::V1::GreetRequest.new(name:) })
 ```
 
 A bidirectional method takes an Enumerable as well and yields responses as a server stream does. It is half-duplex: every request is sent before responses are read, which works over HTTP/1.1 and HTTP/2 alike.

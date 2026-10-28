@@ -54,6 +54,8 @@ client.greet({name: "Ruby"}, timeout: 1)
 client.greet(Acme::Greet::V1::GreetRequest.new(name: "Ruby"), timeout: 1)
 ```
 
+Keywords and Hashes are a shorthand for requests written at the call site. A request built elsewhere and passed in a variable should be the message object, which keeps it type-checked; see [Type signatures](#type-signatures).
+
 Every method also takes `headers:` and `timeout:` (seconds) keywords, so a request field with either name is passed in a Hash or a message. A method raises `ConnectRpcHttpx::Error` when the RPC fails. Unary and client-streaming methods return the response message; client-streaming and bidirectional methods take an Enumerable of requests, each a message or a Hash; server-streaming and bidirectional methods yield the responses to a block, or return a `ConnectRpcHttpx::ResponseStream` to iterate. See [connect_rpc_httpx](../connect_rpc_httpx/) for the client options, response metadata and errors.
 
 An RPC whose Ruby name would override a method every client has, such as `Class` or `Headers`, gets a trailing underscore: `class_`, `headers_`.
@@ -62,11 +64,17 @@ An RPC whose Ruby name would override a method every client has, such as `Class`
 
 The `*_connect.rbs` files declare each client against the message classes, so Steep checks calls into the generated clients, down to the fields of nested Hashes. Add the output directory to the Steepfile's `signature` list. The message classes themselves need signatures as well, such as those `protoc --rbs_out` writes.
 
-Each client declares a type alias for every message its requests reach, covering both the message and its Hash form, such as `GreetServiceClient::greet_request_init`. Steep cannot infer it for Hash literals inside an Enumerator, which need an annotation:
+Each client declares a type alias for every message its requests reach, covering both the message and its Hash form, such as `GreetServiceClient::greet_request_init`. Steep checks a Hash against it only where the literal is written as the argument, including inside an Array literal or a block's return value. A Hash assigned to a variable first is typed as a plain `Hash` and rejected, so pass the message object instead:
 
 ```ruby
-requests = [{name: "a"}, {name: "b"}] #: Array[Acme::Greet::V1::GreetServiceClient::greet_request_init]
-client.greet_many(requests.each)
+client.greet_many([{name: "a"}, {name: "b"}])                      # checked
+client.greet_many(names.map { |name| {name:} })                    # checked
+
+request = Acme::Greet::V1::GreetRequest.new(name: "a")
+client.greet(request)                                              # checked
+
+fields = {name: "a"}
+client.greet(fields)                                               # rejected by Steep
 ```
 
 ## License
