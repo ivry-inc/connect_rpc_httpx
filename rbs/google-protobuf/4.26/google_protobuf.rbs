@@ -48,6 +48,7 @@ module Google
       def name: () -> String
       def package: () -> String
       def message_type: () -> RepeatedField[DescriptorProto]
+      def enum_type: () -> RepeatedField[EnumDescriptorProto]
       def service: () -> RepeatedField[ServiceDescriptorProto]
       def options: () -> FileOptions?
       def source_code_info: () -> SourceCodeInfo?
@@ -59,7 +60,37 @@ module Google
 
     class DescriptorProto < AbstractMessage
       def name: () -> String
+      def field: () -> RepeatedField[FieldDescriptorProto]
       def nested_type: () -> RepeatedField[DescriptorProto]
+      def enum_type: () -> RepeatedField[EnumDescriptorProto]
+      def options: () -> MessageOptions?
+    end
+
+    class MessageOptions < AbstractMessage
+      def map_entry: () -> bool
+    end
+
+    class FieldDescriptorProto < AbstractMessage
+      def name: () -> String
+      def number: () -> Integer
+
+      # :TYPE_STRING, :TYPE_MESSAGE, ...
+      def type: () -> Symbol
+
+      # :LABEL_OPTIONAL, :LABEL_REPEATED or :LABEL_REQUIRED
+      def label: () -> Symbol
+
+      # The fully-qualified name of a message or enum type, such as ".acme.v1.Outer.Inner".
+      def type_name: () -> String
+    end
+
+    class EnumDescriptorProto < AbstractMessage
+      def name: () -> String
+      def value: () -> RepeatedField[EnumValueDescriptorProto]
+    end
+
+    class EnumValueDescriptorProto < AbstractMessage
+      def name: () -> String
     end
 
     class ServiceDescriptorProto < AbstractMessage

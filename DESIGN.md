@@ -15,6 +15,10 @@ For `foo/bar.proto`, the plugin writes `foo/bar_connect.rb` and `foo/bar_connect
 
 A client class holds one `ConnectRpcHttpx::MethodDescriptor` constant per RPC and a snake_case method calling it. The descriptors carry everything the runtime needs (path, message classes, idempotency level, stream type), so the generated methods are one-liners calling `call_unary`, `call_client_stream`, `call_server_stream` or `call_bidi_stream`, and all protocol logic lives in the runtime. Unary and client-streaming methods return the response message; `call_unary` and `call_client_stream` with a descriptor return it with the response headers and trailers.
 
+A request may be a message or a Hash of its fields, which google-protobuf turns into the message, nested Hashes and Arrays included. A method taking one request also takes its fields as keyword arguments (`**fields`), passing them on through `Client#request_from`. The `headers:` and `timeout:` options take precedence, so request fields of those names have no keyword form.
+
+The RBS side gives each client a type alias per message its requests reach, transitively: `greet_request_init = GreetRequest | { ?name: ::String?, ... }`. Message fields refer to the aliases of their types, so a recursive message gives a recursive alias. Enum fields are a union of the value names as Symbols and `::Integer`, and `google.protobuf.Timestamp` also takes `::Time`, as google-protobuf does. The aliases are declared in each client class rather than once per message, so a signature depends on no other generated file. `signatures_spec` type checks `spec/fixtures/steep/usage.rb` against them.
+
 Naming conflicts are resolved at generation time: an RPC whose Ruby name matches a method of `ConnectRpcHttpx::Client` or `Object`, private ones included, gets a trailing underscore, and two RPCs that map to the same Ruby name fail generation.
 
 ## Runtime

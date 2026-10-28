@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package acme.greet.v1;
 
+import "google/protobuf/timestamp.proto";
+
 // Greets people.
 service GreetService {
   // Says hello.
@@ -25,10 +27,22 @@ service GreetService {
 
 message GreetRequest {
   string name = 1;
+  Nested nested = 2;
+  repeated string tags = 3;
+  map<string, Nested> extras = 4;
+  Mood mood = 5;
+  google.protobuf.Timestamp at = 6;
+  double weight = 7;
 
   message Nested {
     string value = 1;
+    Nested child = 2;
   }
+}
+
+enum Mood {
+  MOOD_UNSPECIFIED = 0;
+  MOOD_HAPPY = 1;
 }
 
 message GreetResponse {

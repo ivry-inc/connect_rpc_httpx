@@ -42,17 +42,32 @@ For `acme/greet/v1/greet.proto`, this writes `acme/greet/v1/greet_connect.rb` an
 require "acme/greet/v1/greet_connect"
 
 client = Acme::Greet::V1::GreetServiceClient.new("https://api.example.com")
-response = client.greet(Acme::Greet::V1::GreetRequest.new(name: "Ruby"))
+response = client.greet(name: "Ruby")
 response.greeting
 ```
 
-A method takes `headers:` and `timeout:` (seconds) keywords, and raises `ConnectRpcHttpx::Error` when the RPC fails. Unary and client-streaming methods return the response message; client-streaming and bidirectional methods take an Enumerable of requests; server-streaming and bidirectional methods yield the responses to a block, or return a `ConnectRpcHttpx::ResponseStream` to iterate. See [connect_rpc_httpx](../connect_rpc_httpx/) for the client options, response metadata and errors.
+A method taking a single request takes it as keyword arguments, as a Hash of its fields, or as the message. Message, repeated and map fields nest the same way, and enum fields take the value name as a Symbol:
+
+```ruby
+client.greet(name: "Ruby", nested: {value: "a"}, tags: ["x"], mood: :MOOD_HAPPY)
+client.greet({name: "Ruby"}, timeout: 1)
+client.greet(Acme::Greet::V1::GreetRequest.new(name: "Ruby"), timeout: 1)
+```
+
+Every method also takes `headers:` and `timeout:` (seconds) keywords, so a request field with either name is passed in a Hash or a message. A method raises `ConnectRpcHttpx::Error` when the RPC fails. Unary and client-streaming methods return the response message; client-streaming and bidirectional methods take an Enumerable of requests, each a message or a Hash; server-streaming and bidirectional methods yield the responses to a block, or return a `ConnectRpcHttpx::ResponseStream` to iterate. See [connect_rpc_httpx](../connect_rpc_httpx/) for the client options, response metadata and errors.
 
 An RPC whose Ruby name would override a method every client has, such as `Class` or `Headers`, gets a trailing underscore: `class_`, `headers_`.
 
 ### Type signatures
 
-The `*_connect.rbs` files declare each client against the message classes, so Steep checks calls into the generated clients. Add the output directory to the Steepfile's `signature` list. The message classes themselves need signatures as well, such as those `protoc --rbs_out` writes.
+The `*_connect.rbs` files declare each client against the message classes, so Steep checks calls into the generated clients, down to the fields of nested Hashes. Add the output directory to the Steepfile's `signature` list. The message classes themselves need signatures as well, such as those `protoc --rbs_out` writes.
+
+Each client declares a type alias for every message its requests reach, covering both the message and its Hash form, such as `GreetServiceClient::greet_request_init`. Steep cannot infer it for Hash literals inside an Enumerator, which need an annotation:
+
+```ruby
+requests = [{name: "a"}, {name: "b"}] #: Array[Acme::Greet::V1::GreetServiceClient::greet_request_init]
+client.greet_many(requests.each)
+```
 
 ## License
 

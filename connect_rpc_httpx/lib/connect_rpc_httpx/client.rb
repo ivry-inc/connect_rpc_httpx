@@ -15,7 +15,7 @@ module ConnectRpcHttpx
   # connections per session, and that pool is thread-safe.
   #
   #   client = Acme::Greet::V1::GreetServiceClient.new("https://api.example.com")
-  #   client.greet(Acme::Greet::V1::GreetRequest.new(name: "Ruby")).greeting
+  #   client.greet(name: "Ruby").greeting
   class Client
     USER_AGENT = "connect-ruby-httpx/#{VERSION}".freeze #: String
 

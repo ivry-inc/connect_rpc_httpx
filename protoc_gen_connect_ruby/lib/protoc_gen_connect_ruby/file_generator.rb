@@ -26,6 +26,9 @@ module ProtocGenConnectRuby
     RBS_HEADERS = "::Hash[::String, ::String | ::Array[::String]]" #: String
     RBS_TIMEOUT = "::ConnectRpcHttpx::seconds?" #: String
 
+    # Keyword parameters of every generated method, which request fields cannot be passed as.
+    OPTION_KEYWORDS = ["headers", "timeout"].freeze #: Array[String]
+
     attr_reader :file #: Google::Protobuf::FileDescriptorProto
 
     # @rbs @type_names: TypeNames
@@ -105,16 +108,16 @@ module ProtocGenConnectRuby
       name = ruby_method(method)
       case type
       when :unary
-        out.block("def #{name}(request, headers: {}, timeout: self.timeout)") do
-          out.line("call_unary(#{constant}, request, headers:, timeout:).message")
+        out.block("def #{name}(request = nil, headers: {}, timeout: self.timeout, **fields)") do
+          out.line("call_unary(#{constant}, request_from(request, fields), headers:, timeout:).message")
         end
       when :client_stream
         out.block("def #{name}(requests, headers: {}, timeout: self.timeout)") do
           out.line("call_client_stream(#{constant}, requests, headers:, timeout:).message")
         end
       when :server_stream
-        out.block("def #{name}(request, headers: {}, timeout: self.timeout, &)") do
-          out.line("call_server_stream(#{constant}, request, headers:, timeout:, &)")
+        out.block("def #{name}(request = nil, headers: {}, timeout: self.timeout, **fields, &)") do
+          out.line("call_server_stream(#{constant}, request_from(request, fields), headers:, timeout:, &)")
         end
       when :bidi_stream
         out.block("def #{name}(requests, headers: {}, timeout: self.timeout, &)") do
@@ -125,30 +128,50 @@ module ProtocGenConnectRuby
 
     #: (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
     private def rbs_client(out, service, index)
+      methods = indexed_methods(service)
+      types = RequestTypes.new(@type_names, package: file.package)
+      methods.each { |method, _| types.alias_name(method.input_type) }
+
       comment(out, [SERVICE_FIELD, index])
       out.block("class #{client_class(service)} < ::ConnectRpcHttpx::Client") do
         out.line("SERVICE_NAME: ::String")
-        indexed_methods(service).each do |method, method_index|
+        out.line
+        types.declarations.each { |declaration| out.line(declaration) }
+        methods.each do |method, method_index|
           input = @type_names.fetch(method.input_type)
           output = @type_names.fetch(method.output_type)
           out.line
           out.line("#{method_constant(method)}: ::ConnectRpcHttpx::MethodDescriptor[#{input}, #{output}]")
           out.line
           comment(out, [SERVICE_FIELD, index, METHOD_FIELD, method_index])
-          out.line("def #{ruby_method(method)}: #{rbs_method_type(stream_type(method), input, output)}")
+          rbs_method(out, method, types)
         end
       end
     end
 
-    #: (Symbol type, String input, String output) -> String
-    private def rbs_method_type(type, input, output)
+    # A method taking one request has a second overload, taking its fields as keyword arguments.
+    #: (Writer out, Google::Protobuf::MethodDescriptorProto method, RequestTypes types) -> void
+    private def rbs_method(out, method, types)
+      input = types.alias_name(method.input_type)
+      output = @type_names.fetch(method.output_type)
       options = "?headers: #{RBS_HEADERS}, ?timeout: #{RBS_TIMEOUT}"
-      stream = "::ConnectRpcHttpx::ResponseStream[#{output}]"
-      case type
-      when :client_stream then "(::Enumerable[#{input}] requests, #{options}) -> #{output}"
-      when :server_stream then "(#{input} request, #{options}) ?{ (#{output} message) -> void } -> #{stream}"
-      when :bidi_stream then "(::Enumerable[#{input}] requests, #{options}) ?{ (#{output} message) -> void } -> #{stream}"
-      else "(#{input} request, #{options}) -> #{output}"
+      type = stream_type(method)
+      returns = if type == :server_stream || type == :bidi_stream
+        "?{ (#{output} message) -> void } -> ::ConnectRpcHttpx::ResponseStream[#{output}]"
+      else
+        "-> #{output}"
+      end
+      # Steep checks the elements of an Array literal against an Array parameter, not an Enumerable.
+      parameters = if type == :client_stream || type == :bidi_stream
+        ["::Array[#{input}] | ::Enumerable[#{input}] requests, #{options}"]
+      else
+        ["#{input} request, #{options}", [*types.keywords(method.input_type, OPTION_KEYWORDS), options].join(", ")]
+      end
+
+      head = "def #{ruby_method(method)}: "
+      parameters.each_with_index do |params, i|
+        lead = i.zero? ? head : "#{" " * (head.size - 2)}| "
+        out.line("#{lead}(#{params}) #{returns}")
       end
     end
 

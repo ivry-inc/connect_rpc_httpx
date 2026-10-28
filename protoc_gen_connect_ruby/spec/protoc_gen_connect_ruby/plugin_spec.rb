@@ -43,6 +43,49 @@ RSpec.describe("protoc-gen-connect-ruby") do
     expect(response).to eq(Acme::Greet::V1::GreetResponse.new(greeting: "Hello, Ruby"))
   end
 
+  describe "the request of a generated method" do
+    let(:request) do
+      Acme::Greet::V1::GreetRequest.new(name: "Ruby", nested: Acme::Greet::V1::GreetRequest::Nested.new(value: "a"))
+    end
+    let!(:stub) do
+      stub_request(:post, "http://greet.test/acme.greet.v1.GreetService/Greet")
+        .with(body: Acme::Greet::V1::GreetRequest.encode(request))
+        .to_return(status: 200, headers: {"content-type" => "application/proto"}, body: "")
+    end
+
+    it "is a message, with options as keywords" do
+      client.greet(request, timeout: 1)
+
+      expect(stub.with(headers: {"connect-timeout-ms" => "1000"})).to have_been_requested
+    end
+
+    it "is built from a Hash of its fields" do
+      client.greet({name: "Ruby", nested: {value: "a"}}, timeout: 1)
+
+      expect(stub).to have_been_requested
+    end
+
+    it "is built from keyword arguments besides the options" do
+      client.greet(name: "Ruby", nested: {value: "a"}, timeout: 1)
+
+      expect(stub.with(headers: {"connect-timeout-ms" => "1000"})).to have_been_requested
+    end
+
+    it "cannot be given both as an argument and as keywords" do
+      expect { client.greet(request, name: "Ruby") }.to raise_error(ArgumentError, /not both/)
+    end
+  end
+
+  it "builds an empty request when called without one" do
+    stub = stub_request(:post, "http://greet.test/acme.greet.v1.GreetService/Greet")
+      .with(body: "")
+      .to_return(status: 200, headers: {"content-type" => "application/proto"}, body: "")
+
+    client.greet
+
+    expect(stub).to have_been_requested
+  end
+
   it "carries the idempotency level, so NO_SIDE_EFFECTS RPCs can use GET" do
     expect(Acme::Greet::V1::GreetServiceClient::GET_GREETING.idempotency).to eq(:no_side_effects)
 

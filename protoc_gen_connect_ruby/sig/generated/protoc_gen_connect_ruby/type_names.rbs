@@ -1,17 +1,28 @@
 # Generated from lib/protoc_gen_connect_ruby/type_names.rb with RBS::Inline
 
 module ProtocGenConnectRuby
-  # Resolves fully-qualified message names, as method input and output types spell them, to
-  # the absolute Ruby constants protoc's Ruby generator defines for them.
+  # Resolves fully-qualified type names, as method input and output types and fields spell them,
+  # to their descriptors and to the absolute Ruby constants protoc's Ruby generator defines for
+  # messages.
   class TypeNames
     @constants: Hash[String, String]
+
+    @messages: Hash[String, Google::Protobuf::DescriptorProto]
+
+    @enums: Hash[String, Google::Protobuf::EnumDescriptorProto]
 
     # : (Array[Google::Protobuf::FileDescriptorProto] files) -> void
     def initialize: (Array[Google::Protobuf::FileDescriptorProto] files) -> void
 
-    # The Ruby constant for a type name such as ".acme.v1.Outer.Inner".
+    # The Ruby constant for a message type name such as ".acme.v1.Outer.Inner".
     # : (String type_name) -> String
     def fetch: (String type_name) -> String
+
+    # : (String type_name) -> Google::Protobuf::DescriptorProto
+    def message: (String type_name) -> Google::Protobuf::DescriptorProto
+
+    # : (String type_name) -> Google::Protobuf::EnumDescriptorProto
+    def enum: (String type_name) -> Google::Protobuf::EnumDescriptorProto
 
     # : (Google::Protobuf::DescriptorProto message, String proto_prefix, String ruby_prefix) -> void
     private def register: (Google::Protobuf::DescriptorProto message, String proto_prefix, String ruby_prefix) -> void

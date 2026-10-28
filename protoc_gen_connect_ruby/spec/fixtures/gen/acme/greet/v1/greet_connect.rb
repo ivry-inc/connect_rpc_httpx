@@ -23,8 +23,8 @@ module Acme
         # Says hello.
         #
         # Returns a greeting.
-        def greet(request, headers: {}, timeout: self.timeout)
-          call_unary(GREET, request, headers:, timeout:).message
+        def greet(request = nil, headers: {}, timeout: self.timeout, **fields)
+          call_unary(GREET, request_from(request, fields), headers:, timeout:).message
         end
 
         GET_GREETING = ::ConnectRpcHttpx::MethodDescriptor.new(
@@ -35,8 +35,8 @@ module Acme
           idempotency: :no_side_effects,
         )
 
-        def get_greeting(request, headers: {}, timeout: self.timeout)
-          call_unary(GET_GREETING, request, headers:, timeout:).message
+        def get_greeting(request = nil, headers: {}, timeout: self.timeout, **fields)
+          call_unary(GET_GREETING, request_from(request, fields), headers:, timeout:).message
         end
 
         HEADERS = ::ConnectRpcHttpx::MethodDescriptor.new(
@@ -47,8 +47,8 @@ module Acme
           idempotency: :idempotency_unknown,
         )
 
-        def headers_(request, headers: {}, timeout: self.timeout)
-          call_unary(HEADERS, request, headers:, timeout:).message
+        def headers_(request = nil, headers: {}, timeout: self.timeout, **fields)
+          call_unary(HEADERS, request_from(request, fields), headers:, timeout:).message
         end
 
         GREET_STREAM = ::ConnectRpcHttpx::MethodDescriptor.new(
@@ -61,8 +61,8 @@ module Acme
         )
 
         # Greets once per second.
-        def greet_stream(request, headers: {}, timeout: self.timeout, &)
-          call_server_stream(GREET_STREAM, request, headers:, timeout:, &)
+        def greet_stream(request = nil, headers: {}, timeout: self.timeout, **fields, &)
+          call_server_stream(GREET_STREAM, request_from(request, fields), headers:, timeout:, &)
         end
 
         GREET_MANY = ::ConnectRpcHttpx::MethodDescriptor.new(

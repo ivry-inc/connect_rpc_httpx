@@ -64,7 +64,7 @@ $LOAD_PATH.unshift(File.expand_path("lib/gen", __dir__))
 require "acme/greet/v1/greet_connect"
 
 client = Acme::Greet::V1::GreetServiceClient.new("https://api.example.com", timeout: 5)
-response = client.greet(Acme::Greet::V1::GreetRequest.new(name: "Ruby"))
+response = client.greet(name: "Ruby")
 response.greeting
 ```
 

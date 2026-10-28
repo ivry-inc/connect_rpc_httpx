@@ -8,33 +8,41 @@ module Acme
       class GreetServiceClient < ::ConnectRpcHttpx::Client
         SERVICE_NAME: ::String
 
+        type greet_request_init = ::Acme::Greet::V1::GreetRequest | { ?name: ::String?, ?nested: greet_request_nested_init?, ?tags: ::Array[::String]?, ?extras: ::Hash[(::String | ::Symbol), greet_request_nested_init]?, ?mood: (:MOOD_UNSPECIFIED | :MOOD_HAPPY | ::Integer)?, ?at: google_protobuf_timestamp_init?, ?weight: (::Float | ::Integer)? }
+        type greet_request_nested_init = ::Acme::Greet::V1::GreetRequest::Nested | { ?value: ::String?, ?child: greet_request_nested_init? }
+        type google_protobuf_timestamp_init = ::Google::Protobuf::Timestamp | ::Time | { ?seconds: ::Integer?, ?nanos: ::Integer? }
+
         GREET: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetResponse]
 
         # Says hello.
         #
         # Returns a greeting.
-        def greet: (::Acme::Greet::V1::GreetRequest request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
+        def greet: (greet_request_init request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
+                 | (?name: ::String?, ?nested: greet_request_nested_init?, ?tags: ::Array[::String]?, ?extras: ::Hash[(::String | ::Symbol), greet_request_nested_init]?, ?mood: (:MOOD_UNSPECIFIED | :MOOD_HAPPY | ::Integer)?, ?at: google_protobuf_timestamp_init?, ?weight: (::Float | ::Integer)?, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
 
         GET_GREETING: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetResponse]
 
-        def get_greeting: (::Acme::Greet::V1::GreetRequest request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
+        def get_greeting: (greet_request_init request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
+                        | (?name: ::String?, ?nested: greet_request_nested_init?, ?tags: ::Array[::String]?, ?extras: ::Hash[(::String | ::Symbol), greet_request_nested_init]?, ?mood: (:MOOD_UNSPECIFIED | :MOOD_HAPPY | ::Integer)?, ?at: google_protobuf_timestamp_init?, ?weight: (::Float | ::Integer)?, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
 
         HEADERS: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetRequest::Nested]
 
-        def headers_: (::Acme::Greet::V1::GreetRequest request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetRequest::Nested
+        def headers_: (greet_request_init request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetRequest::Nested
+                    | (?name: ::String?, ?nested: greet_request_nested_init?, ?tags: ::Array[::String]?, ?extras: ::Hash[(::String | ::Symbol), greet_request_nested_init]?, ?mood: (:MOOD_UNSPECIFIED | :MOOD_HAPPY | ::Integer)?, ?at: google_protobuf_timestamp_init?, ?weight: (::Float | ::Integer)?, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetRequest::Nested
 
         GREET_STREAM: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetResponse]
 
         # Greets once per second.
-        def greet_stream: (::Acme::Greet::V1::GreetRequest request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) ?{ (::Acme::Greet::V1::GreetResponse message) -> void } -> ::ConnectRpcHttpx::ResponseStream[::Acme::Greet::V1::GreetResponse]
+        def greet_stream: (greet_request_init request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) ?{ (::Acme::Greet::V1::GreetResponse message) -> void } -> ::ConnectRpcHttpx::ResponseStream[::Acme::Greet::V1::GreetResponse]
+                        | (?name: ::String?, ?nested: greet_request_nested_init?, ?tags: ::Array[::String]?, ?extras: ::Hash[(::String | ::Symbol), greet_request_nested_init]?, ?mood: (:MOOD_UNSPECIFIED | :MOOD_HAPPY | ::Integer)?, ?at: google_protobuf_timestamp_init?, ?weight: (::Float | ::Integer)?, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) ?{ (::Acme::Greet::V1::GreetResponse message) -> void } -> ::ConnectRpcHttpx::ResponseStream[::Acme::Greet::V1::GreetResponse]
 
         GREET_MANY: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetResponse]
 
-        def greet_many: (::Enumerable[::Acme::Greet::V1::GreetRequest] requests, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
+        def greet_many: (::Array[greet_request_init] | ::Enumerable[greet_request_init] requests, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
 
         CONVERSE: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Greet::V1::GreetRequest, ::Acme::Greet::V1::GreetResponse]
 
-        def converse: (::Enumerable[::Acme::Greet::V1::GreetRequest] requests, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) ?{ (::Acme::Greet::V1::GreetResponse message) -> void } -> ::ConnectRpcHttpx::ResponseStream[::Acme::Greet::V1::GreetResponse]
+        def converse: (::Array[greet_request_init] | ::Enumerable[greet_request_init] requests, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) ?{ (::Acme::Greet::V1::GreetResponse message) -> void } -> ::ConnectRpcHttpx::ResponseStream[::Acme::Greet::V1::GreetResponse]
       end
     end
   end

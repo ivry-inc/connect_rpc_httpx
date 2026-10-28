@@ -19,6 +19,9 @@ module ProtocGenConnectRuby
 
     RBS_TIMEOUT: String
 
+    # Keyword parameters of every generated method, which request fields cannot be passed as.
+    OPTION_KEYWORDS: Array[String]
+
     attr_reader file: Google::Protobuf::FileDescriptorProto
 
     @comments: Hash[Array[Integer], String]
@@ -47,8 +50,9 @@ module ProtocGenConnectRuby
     # : (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
     private def rbs_client: (Writer out, Google::Protobuf::ServiceDescriptorProto service, Integer index) -> void
 
-    # : (Symbol type, String input, String output) -> String
-    private def rbs_method_type: (Symbol type, String input, String output) -> String
+    # A method taking one request has a second overload, taking its fields as keyword arguments.
+    # : (Writer out, Google::Protobuf::MethodDescriptorProto method, RequestTypes types) -> void
+    private def rbs_method: (Writer out, Google::Protobuf::MethodDescriptorProto method, RequestTypes types) -> void
 
     # Methods paired with their index in the service, which SourceCodeInfo paths use.
     # : (Google::Protobuf::ServiceDescriptorProto service) -> Array[[Google::Protobuf::MethodDescriptorProto, Integer]]

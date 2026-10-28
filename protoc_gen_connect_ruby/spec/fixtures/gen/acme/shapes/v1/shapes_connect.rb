@@ -18,8 +18,8 @@ module Acme
         idempotency: :idempotency_unknown,
       )
 
-      def describe(request, headers: {}, timeout: self.timeout)
-        call_unary(DESCRIBE, request, headers:, timeout:).message
+      def describe(request = nil, headers: {}, timeout: self.timeout, **fields)
+        call_unary(DESCRIBE, request_from(request, fields), headers:, timeout:).message
       end
 
       SERVICE_NAME_ = ::ConnectRpcHttpx::MethodDescriptor.new(
@@ -30,8 +30,8 @@ module Acme
         idempotency: :idempotency_unknown,
       )
 
-      def service_name(request, headers: {}, timeout: self.timeout)
-        call_unary(SERVICE_NAME_, request, headers:, timeout:).message
+      def service_name(request = nil, headers: {}, timeout: self.timeout, **fields)
+        call_unary(SERVICE_NAME_, request_from(request, fields), headers:, timeout:).message
       end
 
       CLASS = ::ConnectRpcHttpx::MethodDescriptor.new(
@@ -42,8 +42,8 @@ module Acme
         idempotency: :idempotency_unknown,
       )
 
-      def class_(request, headers: {}, timeout: self.timeout)
-        call_unary(CLASS, request, headers:, timeout:).message
+      def class_(request = nil, headers: {}, timeout: self.timeout, **fields)
+        call_unary(CLASS, request_from(request, fields), headers:, timeout:).message
       end
     end
   end

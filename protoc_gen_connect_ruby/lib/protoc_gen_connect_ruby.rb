@@ -7,6 +7,7 @@
 require_relative "protoc_gen_connect_ruby/version"
 require_relative "protoc_gen_connect_ruby/naming"
 require_relative "protoc_gen_connect_ruby/type_names"
+require_relative "protoc_gen_connect_ruby/request_types"
 require_relative "protoc_gen_connect_ruby/writer"
 require_relative "protoc_gen_connect_ruby/file_generator"
 require_relative "protoc_gen_connect_ruby/generator"

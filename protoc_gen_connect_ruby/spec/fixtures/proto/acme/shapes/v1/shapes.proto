@@ -14,4 +14,7 @@ service shape_service {
 
 message Shape {
   string name = 1;
+  int32 timeout = 2;
+  acme.greet.v1.GreetRequest.Nested origin = 3;
+  map<int32, bool> flags = 4;
 }

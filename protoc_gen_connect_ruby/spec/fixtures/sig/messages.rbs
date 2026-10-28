@@ -1,0 +1,29 @@
+# The message classes protoc's Ruby generator defines for the fixture protos, which the generated
+# client signatures refer to.
+
+module Acme
+  module Greet
+    module V1
+      class GreetRequest < ::Google::Protobuf::AbstractMessage
+        class Nested < ::Google::Protobuf::AbstractMessage
+        end
+      end
+
+      class GreetResponse < ::Google::Protobuf::AbstractMessage
+        def greeting: () -> ::String
+      end
+    end
+  end
+
+  module Shapes
+    class Shape < ::Google::Protobuf::AbstractMessage
+    end
+  end
+end
+
+module Google
+  module Protobuf
+    class Timestamp < AbstractMessage
+    end
+  end
+end

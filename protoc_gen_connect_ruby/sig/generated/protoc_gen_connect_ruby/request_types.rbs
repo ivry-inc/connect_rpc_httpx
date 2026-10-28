@@ -1,0 +1,72 @@
+# Generated from lib/protoc_gen_connect_ruby/request_types.rb with RBS::Inline
+
+module ProtocGenConnectRuby
+  # The RBS types of request messages as a client accepts them: the message itself, or a record of
+  # its fields that google-protobuf builds the message from. Each message reachable from a request
+  # gets a type alias, declared in the client class so the signature needs no other generated file.
+  class RequestTypes
+    FLOAT: String
+
+    SCALARS: Hash[Symbol, String]
+
+    # google-protobuf converts a map key given as a Symbol.
+    STRING_KEY: String
+
+    # Types google-protobuf also converts into a message of the type.
+    CONVERTIBLE: Hash[String, String]
+
+    @aliases: Hash[String, String]
+
+    @package: String
+
+    @type_names: TypeNames
+
+    # : (TypeNames type_names, package: String) -> void
+    def initialize: (TypeNames type_names, package: String) -> void
+
+    # The alias for a message type name, registering it and every message its fields reach.
+    # : (String type_name) -> String
+    def alias_name: (String type_name) -> String
+
+    # Alias declarations for every registered message, in registration order.
+    # : () -> Array[String]
+    def declarations: () -> Array[String]
+
+    # Optional keyword parameters for the fields of a message, except those named in +reserved+.
+    # : (String type_name, Array[String] reserved) -> Array[String]
+    def keywords: (String type_name, Array[String] reserved) -> Array[String]
+
+    # : (String type_name) -> String
+    private def register: (String type_name) -> String
+
+    # : (String type_name) -> String
+    private def record: (String type_name) -> String
+
+    # : (String type_name) -> Array[Google::Protobuf::FieldDescriptorProto]
+    private def fields: (String type_name) -> Array[Google::Protobuf::FieldDescriptorProto]
+
+    # : (Google::Protobuf::FieldDescriptorProto field) -> String
+    private def field_type: (Google::Protobuf::FieldDescriptorProto field) -> String
+
+    # : (Google::Protobuf::FieldDescriptorProto field) -> String
+    private def value_type: (Google::Protobuf::FieldDescriptorProto field) -> String
+
+    # : (Google::Protobuf::FieldDescriptorProto field) -> String
+    private def key_type: (Google::Protobuf::FieldDescriptorProto field) -> String
+
+    # google-protobuf takes an enum value as its name or its number.
+    # : (String type_name) -> String
+    private def enum_values: (String type_name) -> String
+
+    # : (Google::Protobuf::FieldDescriptorProto field) -> Google::Protobuf::DescriptorProto?
+    private def map_entry: (Google::Protobuf::FieldDescriptorProto field) -> Google::Protobuf::DescriptorProto?
+
+    # google-protobuf accepts nil for any field, leaving it unset.
+    # : (String type) -> String
+    private def nilable: (String type) -> String
+
+    # The type name relative to the file's package, in snake_case: greet_request_nested_init.
+    # : (String type_name) -> String
+    private def unique_name: (String type_name) -> String
+  end
+end

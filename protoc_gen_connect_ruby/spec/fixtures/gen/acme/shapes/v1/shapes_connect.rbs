@@ -6,17 +6,23 @@ module Acme
     class Shape_serviceClient < ::ConnectRpcHttpx::Client
       SERVICE_NAME: ::String
 
+      type shape_init = ::Acme::Shapes::Shape | { ?name: ::String?, ?timeout: ::Integer?, ?origin: acme_greet_v1_greet_request_nested_init?, ?flags: ::Hash[::Integer, bool]? }
+      type acme_greet_v1_greet_request_nested_init = ::Acme::Greet::V1::GreetRequest::Nested | { ?value: ::String?, ?child: acme_greet_v1_greet_request_nested_init? }
+
       DESCRIBE: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Shapes::Shape, ::Acme::Greet::V1::GreetResponse]
 
-      def describe: (::Acme::Shapes::Shape request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
+      def describe: (shape_init request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
+                  | (?name: ::String?, ?origin: acme_greet_v1_greet_request_nested_init?, ?flags: ::Hash[::Integer, bool]?, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Greet::V1::GreetResponse
 
       SERVICE_NAME_: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Shapes::Shape, ::Acme::Shapes::Shape]
 
-      def service_name: (::Acme::Shapes::Shape request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Shapes::Shape
+      def service_name: (shape_init request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Shapes::Shape
+                      | (?name: ::String?, ?origin: acme_greet_v1_greet_request_nested_init?, ?flags: ::Hash[::Integer, bool]?, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Shapes::Shape
 
       CLASS: ::ConnectRpcHttpx::MethodDescriptor[::Acme::Shapes::Shape, ::Acme::Shapes::Shape]
 
-      def class_: (::Acme::Shapes::Shape request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Shapes::Shape
+      def class_: (shape_init request, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Shapes::Shape
+                | (?name: ::String?, ?origin: acme_greet_v1_greet_request_nested_init?, ?flags: ::Hash[::Integer, bool]?, ?headers: ::Hash[::String, ::String | ::Array[::String]], ?timeout: ::ConnectRpcHttpx::seconds?) -> ::Acme::Shapes::Shape
     end
   end
 end

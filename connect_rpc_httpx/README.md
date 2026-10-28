@@ -26,7 +26,7 @@ client = Acme::Greet::V1::GreetServiceClient.new(
   timeout: 5,                                   # default deadline, in seconds
 )
 
-response = client.greet(Acme::Greet::V1::GreetRequest.new(name: "Ruby"))
+response = client.greet(name: "Ruby")
 ```
 
 `Client.new` options:
@@ -89,10 +89,10 @@ stream = client.greet_stream(request)
 stream.first(3)   # leaving the iteration early cancels the RPC
 ```
 
-A client-streaming method takes any Enumerable of requests, such as an Array or a lazy Enumerator, sends each message as it is produced, and returns the single response:
+A client-streaming method takes any Enumerable of requests, messages or Hashes of their fields, such as an Array or a lazy Enumerator, sends each message as it is produced, and returns the single response:
 
 ```ruby
-client.greet_many(names.lazy.map { |name| Acme::Greet::V1::GreetRequest.new(name:) })
+client.greet_many(names.lazy.map { |name| {name:} })
 ```
 
 A bidirectional method takes an Enumerable as well and yields responses as a server stream does. It is half-duplex: every request is sent before responses are read, which works over HTTP/1.1 and HTTP/2 alike.
